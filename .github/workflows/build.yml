@@ -71,7 +71,8 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
 
-      - name: Debug — list bundle contents
+      - name: Debug — list bundle contents (Unix)
+        if: runner.os != 'Windows'
         run: find src-tauri/target/release/bundle -type f | sort
 
       - name: Upload portable binary
