@@ -4,6 +4,7 @@ import { useTheme } from "./composables/useTheme.js"
 import { useDashboard } from "./composables/useDashboard.js"
 import { useI18n } from "./composables/useI18n.js"
 import { useConfig } from "./composables/useConfig.js"
+import { useUpdater } from "./composables/useUpdater.js"
 import DashboardHeader from "./components/DashboardHeader.vue"
 import StatsBar from "./components/StatsBar.vue"
 import ProductTreeTable from "./components/ProductTreeTable.vue"
@@ -17,6 +18,7 @@ const { theme, toggle: toggleTheme } = useTheme()
 const { month, year, months, years, monthLabel, loading, error, totals, accountExpenses, products, refresh } = useDashboard()
 const { locale, t, toggle: toggleLang } = useI18n()
 const { configValid, configMessage, saving, check, save } = useConfig()
+const { checking: updateChecking, updateVersion, downloading, error: updateError, checkForUpdates, installUpdate } = useUpdater()
 
 const cfgClientId = ref("")
 const cfgApiKey = ref("")
@@ -27,6 +29,8 @@ onMounted(async () => {
   configChecked.value = true
   if (configValid.value) {
     refresh()
+    // Check for updates after initial data loads
+    setTimeout(() => checkForUpdates(), 3000)
   }
 })
 
@@ -65,6 +69,13 @@ async function handleSaveConfig() {
     </div>
   </div>
   <div v-else class="app" :class="theme">
+    <div v-if="updateVersion" class="update-banner">
+      <span>Update {{ updateVersion }} available</span>
+      <button :disabled="downloading" @click="installUpdate">
+        {{ downloading ? 'Downloading...' : 'Install' }}
+      </button>
+      <button class="update-dismiss" @click="updateVersion = null">×</button>
+    </div>
     <DashboardHeader
       :month="month" :year="year" :months="months" :years="years"
       :month-label="monthLabel" :theme="theme"

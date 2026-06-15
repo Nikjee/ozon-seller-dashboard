@@ -65,6 +65,7 @@ pub fn run() {
             save_config,
             get_dashboard_summary,
         ])
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -73,6 +74,9 @@ pub fn run() {
                         .build(),
                 )?;
             }
+            app.handle().plugin(
+                tauri_plugin_updater::Builder::new().build(),
+            )?;
             Ok(())
         })
         .run(tauri::generate_context!())
