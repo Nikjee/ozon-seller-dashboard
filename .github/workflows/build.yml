@@ -40,6 +40,7 @@ jobs:
             platform-key: darwin-aarch64
             # macOS generates updater artifacts natively in macos/ dir
             updater-sig-glob: src-tauri/target/release/bundle/macos/*.tar.gz.sig
+            updater-bundle-glob: src-tauri/target/release/bundle/macos/*.tar.gz
             installer-glob: src-tauri/target/release/bundle/**/*.dmg
 
     runs-on: ${{ matrix.os }}
@@ -93,6 +94,14 @@ jobs:
         with:
           name: ${{ matrix.platform-key }}-updater
           path: ${{ matrix.updater-sig-glob }}
+          if-no-files-found: error
+
+      - name: Upload updater bundle (macOS)
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform-key }}-updater-bundle
+          path: ${{ matrix.updater-bundle-glob }}
           if-no-files-found: error
 
   release:
