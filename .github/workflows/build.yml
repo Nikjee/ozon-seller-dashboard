@@ -22,11 +22,13 @@ jobs:
             target: x86_64-unknown-linux-gnu
             extension: ""
             platform-key: linux-x86_64
+            updater-dir: appimage
             installer-glob: src-tauri/target/release/bundle/**/*.deb
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             extension: .exe
             platform-key: windows-x86_64
+            updater-dir: nsis
             installer-glob: |
               src-tauri/target/release/bundle/msi/*.msi
               src-tauri/target/release/bundle/nsis/*.exe
@@ -34,6 +36,7 @@ jobs:
             target: aarch64-apple-darwin
             extension: ""
             platform-key: darwin-aarch64
+            updater-dir: dmg
             installer-glob: src-tauri/target/release/bundle/**/*.dmg
 
     runs-on: ${{ matrix.os }}
@@ -68,6 +71,9 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
 
+      - name: Debug — list bundle contents
+        run: find src-tauri/target/release/bundle -type f | sort
+
       - name: Upload portable binary
         uses: actions/upload-artifact@v4
         with:
@@ -87,9 +93,10 @@ jobs:
         with:
           name: ${{ matrix.platform-key }}-updater
           path: |
-            src-tauri/target/release/bundle/**/*.sig
-            src-tauri/target/release/bundle/**/*.tar.gz
-            src-tauri/target/release/bundle/nsis/*.zip
+            src-tauri/target/release/bundle/${{ matrix.updater-dir }}/*.tar.gz
+            src-tauri/target/release/bundle/${{ matrix.updater-dir }}/*.tar.gz.sig
+            src-tauri/target/release/bundle/${{ matrix.updater-dir }}/*.zip
+            src-tauri/target/release/bundle/${{ matrix.updater-dir }}/*.zip.sig
           if-no-files-found: ignore
 
   release:
@@ -106,6 +113,9 @@ jobs:
         with:
           path: artifacts
 
+      - name: Debug — list downloaded artifacts
+        run: find artifacts -type f | sort
+
       - name: Generate latest.json manifest
         shell: bash
         run: |
@@ -120,13 +130,16 @@ jobs:
             key="${dir#artifacts/}"
             key="${key%-updater/}"
 
-            sig_file=$(find "$dir" -name '*.sig' | head -1)
-            [ -z "$sig_file" ] && echo "  [warn] No .sig in $dir" >&2 && continue
-            sig=$(tr -d '\n\r' < "$sig_file")
-
+            # Find updater bundle (.tar.gz for linux/macos, .zip for windows)
+            # Only match files that are updater artifacts (not deb internal files)
             bundle=$(find "$dir" \( -name '*.tar.gz' -o -name '*.zip' \) ! -name '*.sig' | head -1)
             [ -z "$bundle" ] && echo "  [warn] No bundle in $dir" >&2 && continue
             bundle_name=$(basename "$bundle")
+
+            # Find matching .sig file (same basename + .sig)
+            sig_file=$(find "$dir" -name "${bundle_name}.sig" | head -1)
+            [ -z "$sig_file" ] && echo "  [warn] No .sig for $bundle_name in $dir" >&2 && continue
+            sig=$(tr -d '\n\r' < "$sig_file")
 
             url="https://github.com/${REPO}/releases/download/${TAG}/${bundle_name}"
             platforms=$(echo "$platforms" | jq \

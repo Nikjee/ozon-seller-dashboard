@@ -23,7 +23,8 @@ export function useUpdater() {
         updateVersion.value = null
       }
     } catch (e) {
-      // Silently fail — updater might not be configured yet
+      console.error('[updater] check failed:', e)
+      error.value = typeof e === 'string' ? e : (e.message || 'Update check failed')
       updateVersion.value = null
     } finally {
       checking.value = false

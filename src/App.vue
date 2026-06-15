@@ -76,6 +76,10 @@ async function handleSaveConfig() {
       </button>
       <button class="update-dismiss" @click="updateVersion = null">×</button>
     </div>
+    <div v-else-if="updateError" class="update-banner update-banner--error">
+      <span>Update check failed: {{ updateError }}</span>
+      <button class="update-dismiss" @click="updateError = null">×</button>
+    </div>
     <DashboardHeader
       :month="month" :year="year" :months="months" :years="years"
       :month-label="monthLabel" :theme="theme"
