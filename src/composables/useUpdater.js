@@ -1,4 +1,5 @@
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import { invoke } from '@tauri-apps/api/core'
 
 export function useUpdater() {
   const checking = ref(false)
@@ -6,6 +7,19 @@ export function useUpdater() {
   const downloadProgress = ref(0)
   const downloading = ref(false)
   const error = ref(null)
+
+  /** Build authentication headers for private repo access */
+  async function authHeaders() {
+    try {
+      const token = await invoke('get_updater_token')
+      if (token) {
+        return { Authorization: `Bearer ${token}` }
+      }
+    } catch {
+      // Token not available — public repo or dev build
+    }
+    return {}
+  }
 
   async function checkForUpdates() {
     // Only check on desktop Tauri runtime
@@ -16,7 +30,8 @@ export function useUpdater() {
       checking.value = true
       error.value = null
       const { check } = await import('@tauri-apps/plugin-updater')
-      const update = await check()
+      const headers = await authHeaders()
+      const update = await check({ headers })
       if (update) {
         updateVersion.value = update.version
       } else {
@@ -37,9 +52,14 @@ export function useUpdater() {
       error.value = null
       const { check } = await import('@tauri-apps/plugin-updater')
       const { relaunch } = await import('@tauri-apps/plugin-process')
-      const update = await check()
+      const headers = await authHeaders()
+      const update = await check({ headers })
       if (update) {
-        await update.downloadAndInstall()
+        await update.downloadAndInstall((event) => {
+          if (event.progress) {
+            downloadProgress.value = event.progress
+          }
+        }, { headers })
         await relaunch()
       }
     } catch (e) {

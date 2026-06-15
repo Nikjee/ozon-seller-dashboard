@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "ozon-dashboard",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "identifier": "com.ozon.dashboard",
   "build": {
     "frontendDist": "../dist",
@@ -27,7 +27,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY5MDBDOTkwOTUzOEVFNDQKUldSRTdqaVZrTWtBYWZzV0x5c3J0aWdxMk9jU0RVUTZ1K1lobmNyUEFhUjFsV2JHUFRyalU0SjUK",
       "endpoints": [
-        "https://x-access-token:${TAURI_UPDATER_TOKEN}@github.com/Nikjee/ozon-seller-dashboard/releases/latest/download/latest.json"
+        "https://github.com/Nikjee/ozon-seller-dashboard/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"

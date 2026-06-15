@@ -54,6 +54,14 @@ async fn get_dashboard_summary(
     dashboard::build_dashboard_summary(&cfg, month, year).await
 }
 
+/// Returns the GitHub PAT for updater authentication, embedded at compile time.
+/// This allows the updater to authenticate with GitHub's API (Bearer token)
+/// instead of Basic Auth, which is required for private repo release assets.
+#[tauri::command]
+fn get_updater_token() -> Option<String> {
+    option_env!("TAURI_UPDATER_TOKEN").map(|s| s.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -64,6 +72,7 @@ pub fn run() {
             check_config,
             save_config,
             get_dashboard_summary,
+            get_updater_token,
         ])
         .plugin(tauri_plugin_process::init())
         .setup(|app| {
