@@ -16,12 +16,20 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             extension: ""
+            portable-name: ozon-dashboard-linux-x86_64
+            installer-glob: src-tauri/target/release/bundle/**/*.deb
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             extension: .exe
+            portable-name: ozon-dashboard-windows-x86_64
+            installer-glob: |
+              src-tauri/target/release/bundle/msi/*.msi
+              src-tauri/target/release/bundle/nsis/*.exe
           - os: macos-latest
             target: aarch64-apple-darwin
             extension: ""
+            portable-name: ozon-dashboard-macos-arm64
+            installer-glob: src-tauri/target/release/bundle/**/*.dmg
 
     runs-on: ${{ matrix.os }}
 
@@ -53,17 +61,16 @@ jobs:
       - name: Build with Tauri
         run: npx @tauri-apps/cli@^2 build
 
-      - name: Upload binary
+      - name: Upload portable binary
         uses: actions/upload-artifact@v4
         with:
-          name: ozon-dashboard-${{ matrix.os }}${{ matrix.extension }}
+          name: ${{ matrix.portable-name }}
           path: src-tauri/target/release/ozon-dashboard${{ matrix.extension }}
           if-no-files-found: error
 
-      - name: Upload installer (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
-          name: ozon-dashboard-windows-installer
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          name: ${{ matrix.portable-name }}-installers
+          path: ${{ matrix.installer-glob }}
           if-no-files-found: ignore
