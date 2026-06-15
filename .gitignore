@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+config.json
+server/
+release/
+src-tauri/target/
+src-tauri/C:*/
