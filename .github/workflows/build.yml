@@ -194,8 +194,6 @@ jobs:
         run: |
           TAG="${{ github.ref_name }}"
           REPO="${{ github.repository }}"
-          OWNER="${REPO%/*}"
-          REPO_NAME="${REPO#*/}"
 
           # Fetch release info to get asset IDs
           echo "Fetching release info for $TAG..."
@@ -211,6 +209,7 @@ jobs:
 
           # Build the platforms object with API URLs
           platforms='{}'
+          found_any=false
           for key in "${!PLATFORM_ASSETS[@]}"; do
             asset_name="${PLATFORM_ASSETS[$key]}"
             echo "  Looking for asset: $asset_name"
@@ -240,7 +239,13 @@ jobs:
               --arg sig "$sig" \
               --arg url "$api_url" \
               '. + {($k): {signature: $sig, url: $url}}')
+            found_any=true
           done
+
+          if [ "$found_any" = "false" ]; then
+            echo "ERROR: no platform assets found, aborting" >&2
+            exit 1
+          fi
 
           # Generate API-URL version of latest.json
           jq -n \
@@ -274,10 +279,11 @@ jobs:
           echo "Committing latest.json to main..."
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+          # Note: we're on detached HEAD (tag checkout), so push HEAD explicitly
           git add latest.json
-          git diff --cached --quiet || {
+          git diff --cached --quiet && echo "No changes to latest.json" || {
             git commit -m "Update latest.json for ${TAG} [skip ci]"
-            git push origin main
+            git push origin HEAD:main
             echo "  Committed and pushed"
           }
           echo "Done"
