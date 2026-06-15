@@ -24,6 +24,7 @@ jobs:
             platform-key: linux-x86_64
             # For the updater: use the AppImage installer + its .sig
             updater-sig-glob: src-tauri/target/release/bundle/appimage/*.AppImage.sig
+            updater-bundle-glob: src-tauri/target/release/bundle/appimage/*.AppImage
             installer-glob: src-tauri/target/release/bundle/**/*.deb
           - os: windows-latest
             target: x86_64-pc-windows-msvc
@@ -97,8 +98,8 @@ jobs:
           path: ${{ matrix.updater-sig-glob }}
           if-no-files-found: error
 
-      - name: Upload updater bundle (macOS)
-        if: matrix.os == 'macos-latest'
+      - name: Upload updater bundle (macOS / Linux)
+        if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform-key }}-updater-bundle
@@ -185,3 +186,98 @@ jobs:
           files: |
             artifacts/**/*
             latest.json
+
+      - name: Replace latest.json with API URLs + commit to repo
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          REPO="${{ github.repository }}"
+          OWNER="${REPO%/*}"
+          REPO_NAME="${REPO#*/}"
+
+          # Fetch release info to get asset IDs
+          echo "Fetching release info for $TAG..."
+          gh api "repos/${REPO}/releases/tags/${TAG}" > /tmp/release.json
+
+          # Determine the updater asset names per platform
+          VERSION="${TAG#v}"
+
+          declare -A PLATFORM_ASSETS
+          PLATFORM_ASSETS[darwin-aarch64]="ozon-dashboard.app.tar.gz"
+          PLATFORM_ASSETS[linux-x86_64]="ozon-dashboard_${VERSION}_amd64.AppImage"
+          PLATFORM_ASSETS[windows-x86_64]="ozon-dashboard_${VERSION}_x64-setup.exe"
+
+          # Build the platforms object with API URLs
+          platforms='{}'
+          for key in "${!PLATFORM_ASSETS[@]}"; do
+            asset_name="${PLATFORM_ASSETS[$key]}"
+            echo "  Looking for asset: $asset_name"
+
+            # Find the asset ID by name
+            asset_id=$(cat /tmp/release.json | jq -r \
+              --arg name "$asset_name" \
+              '.assets[] | select(.name == $name) | .id')
+
+            if [ -z "$asset_id" ] || [ "$asset_id" = "null" ]; then
+              echo "  [warn] Asset not found: $asset_name" >&2
+              continue
+            fi
+            echo "  Asset ID: $asset_id"
+
+            # Find matching .sig in artifacts
+            sig_file=$(find artifacts/${key}-updater/ -name '*.sig' 2>/dev/null | head -1)
+            if [ -z "$sig_file" ]; then
+              echo "  [warn] No .sig found for $key" >&2
+              continue
+            fi
+            sig=$(tr -d '\n\r' < "$sig_file")
+
+            api_url="https://api.github.com/repos/${REPO}/releases/assets/${asset_id}"
+            platforms=$(echo "$platforms" | jq \
+              --arg k "$key" \
+              --arg sig "$sig" \
+              --arg url "$api_url" \
+              '. + {($k): {signature: $sig, url: $url}}')
+          done
+
+          # Generate API-URL version of latest.json
+          jq -n \
+            --arg version "$VERSION" \
+            --arg notes "https://github.com/${REPO}/releases/tag/${TAG}" \
+            --arg pub_date "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --argjson platforms "$platforms" \
+            '{
+              version: $version,
+              notes: $notes,
+              pub_date: $pub_date,
+              platforms: $platforms
+            }' > latest.json
+
+          echo "=== Updated latest.json (API URLs) ==="
+          cat latest.json
+
+          # Replace the existing latest.json asset on the release
+          echo "Deleting old latest.json asset..."
+          old_id=$(cat /tmp/release.json | jq -r '.assets[] | select(.name == "latest.json") | .id')
+          if [ -n "$old_id" ] && [ "$old_id" != "null" ]; then
+            gh api -X DELETE "repos/${REPO}/releases/assets/${old_id}"
+            echo "  Deleted old asset ID $old_id"
+          fi
+
+          echo "Uploading new latest.json..."
+          gh release upload "${TAG}" latest.json --clobber -R "${REPO}"
+          echo "  Uploaded"
+
+          # Commit latest.json to the repo
+          echo "Committing latest.json to main..."
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add latest.json
+          git diff --cached --quiet || {
+            git commit -m "Update latest.json for ${TAG} [skip ci]"
+            git push origin main
+            echo "  Committed and pushed"
+          }
+          echo "Done"

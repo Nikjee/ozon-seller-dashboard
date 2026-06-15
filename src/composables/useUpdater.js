@@ -30,8 +30,11 @@ export function useUpdater() {
       checking.value = true
       error.value = null
       const { check } = await import('@tauri-apps/plugin-updater')
-      const headers = await authHeaders()
-      const update = await check({ headers })
+      const token = await authHeaders()
+      // API contents endpoint needs application/vnd.github.raw Accept
+      const update = await check({
+        headers: { ...token, Accept: 'application/vnd.github.raw' },
+      })
       if (update) {
         updateVersion.value = update.version
       } else {
@@ -52,14 +55,18 @@ export function useUpdater() {
       error.value = null
       const { check } = await import('@tauri-apps/plugin-updater')
       const { relaunch } = await import('@tauri-apps/plugin-process')
-      const headers = await authHeaders()
-      const update = await check({ headers })
+      const token = await authHeaders()
+      // Use same Accept header for check — endpoint is the API contents URL
+      const update = await check({
+        headers: { ...token, Accept: 'application/vnd.github.raw' },
+      })
       if (update) {
+        // API asset download endpoint needs application/octet-stream
         await update.downloadAndInstall((event) => {
           if (event.progress) {
             downloadProgress.value = event.progress
           }
-        }, { headers })
+        }, { headers: { ...token, Accept: 'application/octet-stream' } })
         await relaunch()
       }
     } catch (e) {
