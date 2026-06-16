@@ -205,6 +205,7 @@ pub async fn get_product_info_stocks(config: &OzonConfig) -> Result<Vec<Value>, 
         let body = serde_json::json!({
             "limit": 100,
             "cursor": cursor,
+            "filter": {"visibility": "ALL"},
         });
 
         let response = ozon_request(
