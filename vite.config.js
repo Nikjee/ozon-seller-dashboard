@@ -1,8 +1,20 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    AutoImport({
+      imports: ['vue'],
+      dts: false
+    }),
+    Components({
+      resolvers: [NaiveUiResolver()]
+    })
+  ],
   server: {
     strictPort: true,
     host: '0.0.0.0'
