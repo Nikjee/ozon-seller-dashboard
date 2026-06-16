@@ -171,3 +171,57 @@ pub async fn get_finance_transactions(
         }
     }))
 }
+
+pub async fn get_stock_on_warehouses(
+    config: &OzonConfig,
+    limit: i64,
+    offset: i64,
+    warehouse_type: &str,
+) -> Result<Value, String> {
+    let body = serde_json::json!({
+        "limit": limit,
+        "offset": offset,
+        "warehouse_type": warehouse_type,
+    });
+    ozon_request(config, "/v2/analytics/stock_on_warehouses", "POST", Some(&body)).await
+}
+
+pub async fn get_analytics_stocks(
+    config: &OzonConfig,
+    skus: Vec<i64>,
+) -> Result<Value, String> {
+    let body = serde_json::json!({
+        "sku": skus,
+    });
+    ozon_request(config, "/v1/analytics/stocks", "POST", Some(&body)).await
+}
+
+pub async fn get_stocks_turnover(
+    config: &OzonConfig,
+    sku: i64,
+    limit: i64,
+    offset: i64,
+) -> Result<Value, String> {
+    let body = serde_json::json!({
+        "sku": sku,
+        "limit": limit,
+        "offset": offset,
+    });
+    ozon_request(config, "/v1/analytics/turnover/stocks", "POST", Some(&body)).await
+}
+
+pub async fn get_finance_totals(
+    config: &OzonConfig,
+    date_from: &str,
+    date_to: &str,
+) -> Result<Value, String> {
+    let body = serde_json::json!({
+        "filter": {
+            "date": {
+                "from": date_from,
+                "to": date_to,
+            }
+        }
+    });
+    ozon_request(config, "/v3/finance/transaction/totals", "POST", Some(&body)).await
+}
