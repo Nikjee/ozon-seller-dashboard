@@ -129,21 +129,45 @@ pub async fn get_finance_transactions(
     date_from: &str,
     date_to: &str,
 ) -> Result<Value, String> {
-    let body = serde_json::json!({
-        "filter": {
-            "date": {
-                "from": date_from,
-                "to": date_to,
+    let page_size = 1000;
+    let mut page = 1;
+    let mut all_operations: Vec<Value> = Vec::new();
+
+    loop {
+        let body = serde_json::json!({
+            "filter": {
+                "date": {
+                    "from": date_from,
+                    "to": date_to,
+                }
+            },
+            "page": page,
+            "page_size": page_size,
+        });
+
+        let response = ozon_request(
+            config,
+            "/v3/finance/transaction/list",
+            "POST",
+            Some(&body),
+        )
+        .await?;
+
+        if let Some(ops) = response["result"]["operations"].as_array() {
+            all_operations.extend(ops.clone());
+            if ops.len() < page_size {
+                break;
             }
-        },
-        "page": 1,
-        "page_size": 1000,
-    });
-    ozon_request(
-        config,
-        "/v3/finance/transaction/list",
-        "POST",
-        Some(&body),
-    )
-    .await
+        } else {
+            break;
+        }
+
+        page += 1;
+    }
+
+    Ok(serde_json::json!({
+        "result": {
+            "operations": all_operations,
+        }
+    }))
 }
