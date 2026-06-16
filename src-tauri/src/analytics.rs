@@ -128,6 +128,14 @@ pub async fn get_analytics_dashboard_data(config: &OzonConfig) -> Result<Value, 
             for stock in stocks {
                 if let Some(sku) = stock["sku"].as_i64() {
                     if let Some(analytics) = analytics_map.get(&sku) {
+                        // Copy name and sku from analytics data (stock-info endpoint lacks these fields)
+                        if let Some(name) = analytics["name"].as_str() {
+                            merged["name"] = serde_json::json!(name);
+                        }
+                        merged["sku"] = serde_json::json!(sku);
+                        if let Some(days) = analytics["days_without_sales"].as_i64() {
+                            merged["days_without_sales"] = serde_json::json!(days);
+                        }
                         if let Some(ads) = analytics["ads"].as_f64() {
                             overall_ads += ads;
                             merged["ads"] = serde_json::json!(ads);
