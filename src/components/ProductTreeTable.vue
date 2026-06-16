@@ -40,7 +40,7 @@ function numRender(row, column) {
     if (val === undefined || val === null) break
     val = val[k]
   }
-  if (!val) return '—'
+  if (val === undefined || val === null) return '—'
   return formatRubCompact(val)
 }
 
