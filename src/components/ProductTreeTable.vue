@@ -20,8 +20,21 @@ function onExpandedRowKeysChange(keys) {
   expandedRowKeys.value = keys
 }
 
+function onRowClick(row) {
+  const keys = expandedRowKeys.value ? [...expandedRowKeys.value] : [];
+  const index = keys.indexOf(row.sku);
+  if (index >= 0) {
+    keys.splice(index, 1);
+  } else {
+    keys.push(row.sku);
+  }
+  expandedRowKeys.value = keys;
+}
+
 function numRender(row, column) {
-  const keys = column.key.split('.')
+  const key = column?.key
+  if (!key) return '—'
+  const keys = key.split('.')
   let val = row
   for (const k of keys) {
     if (val === undefined || val === null) break
@@ -32,7 +45,9 @@ function numRender(row, column) {
 }
 
 function profitRender(row, column) {
-  const keys = column.key.split('.')
+  const key = column?.key
+  if (!key) return '—'
+  const keys = key.split('.')
   let val = row
   for (const k of keys) {
     if (val === undefined || val === null) break
@@ -47,6 +62,7 @@ function profitRender(row, column) {
 }
 
 const columns = [
+  { type: 'expand' },
   {
     title: t('table.name'),
     key: 'name',
@@ -123,6 +139,7 @@ const rowKey = row => row.sku
       :expanded-row-keys="expandedRowKeys"
       :expanded-row-render="expandedRowRender"
       @update:expanded-row-keys="onExpandedRowKeysChange"
+      @row-click="onRowClick"
     />
   </template>
 </template>

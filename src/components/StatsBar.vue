@@ -7,7 +7,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-<div v-if="totals" class="stats-bar container">
+<div v-if="totals" class="stats-grid">
     <div class="stat-card">
       <div class="stat-card__label">{{ t('productsSold') }}</div>
       <div class="stat-card__value">{{ totals.total_quantity }}</div>

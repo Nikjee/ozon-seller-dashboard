@@ -906,6 +906,15 @@
 }
 
 .view-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.view-content .n-data-table {
+  flex: 1;
   min-height: 200px;
 }
 

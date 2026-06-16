@@ -8,6 +8,11 @@ const { month, year, data, loading, error, stockByWarehouse, stockByProduct, tot
 
 onMounted(() => refresh())
 
+const maxHeight = computed(() => {
+    // Leave room for header + summary cards + padding (~250px total)
+    return window.innerHeight - 280;
+});
+
 const columns = [
   { title: t('stocks.warehouse'), key: 'warehouse_name' },
   { title: t('stocks.stockType'), key: 'stock_type' },
@@ -38,7 +43,7 @@ const columns = [
             <n-card><n-statistic :label="t('stocks.reservedStock')" :value="totalReserved" /></n-card>
           </div>
           <!-- Stock data table -->
-          <n-data-table :columns="columns" :data="stockByWarehouse" :bordered="false" :single-line="false" />
+          <n-data-table :columns="columns" :data="stockByWarehouse" :bordered="false" :single-line="false" :max-height="maxHeight" />
         </template>
         <n-empty v-else :description="t('noData')" />
       </n-spin>

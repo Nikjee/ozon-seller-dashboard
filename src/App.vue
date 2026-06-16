@@ -107,16 +107,21 @@ async function handleSaveConfig() {
       <n-tabs v-model:value="activeView" type="line" animated>
         <n-tab-pane name="dashboard" :tab="t('tabs.dashboard')">
           <div class="view-container">
-            <LoadingOverlay v-if="loading" />
-            <template v-else-if="error">
-              <ErrorBanner :message="error" @retry="refresh" />
-            </template>
-            <template v-else-if="totals">
-              <StatsBar :totals="totals" :account-expenses="accountExpenses" />
-              <AccountExpensesPanel :account-expenses="accountExpenses" />
-              <ProductTreeTable :products="products" />
-            </template>
-            <EmptyState v-else />
+            <div class="view-header">
+              <h2>{{ t('tabs.dashboard') }}</h2>
+            </div>
+            <div class="view-content">
+              <LoadingOverlay v-if="loading" />
+              <template v-else-if="error">
+                <ErrorBanner :message="error" @retry="refresh" />
+              </template>
+              <template v-else-if="totals">
+                <StatsBar :totals="totals" :account-expenses="accountExpenses" />
+                <AccountExpensesPanel :account-expenses="accountExpenses" />
+                <ProductTreeTable :products="products" enriched />
+              </template>
+              <EmptyState v-else />
+            </div>
           </div>
         </n-tab-pane>
         <n-tab-pane name="stocks" :tab="t('tabs.stocks')">
