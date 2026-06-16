@@ -3,6 +3,7 @@ mod config;
 mod dashboard;
 mod expenses;
 mod ozon;
+mod uniteconomy;
 
 use serde_json::Value;
 use std::sync::Mutex;
