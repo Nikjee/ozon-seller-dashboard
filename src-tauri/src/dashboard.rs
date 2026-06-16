@@ -1,6 +1,7 @@
 use crate::config::OzonConfig;
 use crate::expenses::{build_account_level_expenses, build_expense_categories};
 use crate::ozon::{get_finance_transactions, get_products, get_realization_report};
+use crate::uniteconomy::extract_product_summary;
 use chrono::{Datelike, NaiveDate};
 use serde::Serialize;
 use serde_json::Value;
@@ -213,6 +214,8 @@ pub async fn build_dashboard_summary(
         let mut sorted_postings: Vec<&Posting> = postings.iter().collect();
         sorted_postings.sort_by(|a, b| b.date.cmp(&a.date));
 
+        let product_summary = extract_product_summary(all_ops, *sku);
+
         tree.push(serde_json::json!({
             "sku": sku,
             "name": name,
@@ -233,6 +236,12 @@ pub async fn build_dashboard_summary(
                 "total_expenses": total_expenses,
                 "net_profit": net_profit,
             },
+            "costs": product_summary["costs"],
+            "totalRevenue": product_summary["total_revenue"],
+            "totalCosts": product_summary["total_costs"],
+            "netProfit": product_summary["net_profit"],
+            "profitPerUnit": product_summary["profit_per_unit"],
+            "totalQuantity": product_summary["total_quantity"],
             "postings": sorted_postings,
         }));
     }
