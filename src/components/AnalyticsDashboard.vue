@@ -1,6 +1,6 @@
 <script setup>
 import { computed, h, onMounted } from 'vue'
-import { NTag, NCard, NStatistic, NDataTable, NSpin, NAlert, NEmpty, NButton } from 'naive-ui'
+import { NTag, NCard, NStatistic, NDataTable, NSpin, NAlert, NEmpty, NButton, NPopover } from 'naive-ui'
 import { useI18n } from '../composables/useI18n.js'
 import { useAnalyticsDashboard } from '../composables/useAnalyticsDashboard.js'
 
@@ -38,7 +38,25 @@ const columns = computed(() => [
 <template>
   <div class="view-container">
     <div class="view-header">
-      <h2>{{ t('analytics.title') }}</h2>
+      <h2 style="display: flex; align-items: center; gap: 8px;">
+        {{ t('analytics.title') }}
+        <n-popover trigger="hover" placement="right" :width="320">
+          <template #trigger>
+            <span class="help-icon" style="cursor: help; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ctp-text); font-size: 12px; font-weight: 700; line-height: 1; opacity: 0.5; transition: opacity 0.15s;">?</span>
+          </template>
+          <div>
+            <p><strong>{{ t('analytics.title') }}</strong></p>
+            <p style="margin-top: 8px;">{{ t('analytics.helpIntro') }}</p>
+            <ul style="margin-top: 8px; padding-left: 16px;">
+              <li>{{ t('analytics.helpStockBalance') }}</li>
+              <li>{{ t('analytics.helpAds') }}</li>
+              <li>{{ t('analytics.helpIdc') }}</li>
+              <li>{{ t('analytics.helpTurnover') }}</li>
+              <li>{{ t('analytics.helpDataSource') }}</li>
+            </ul>
+          </div>
+        </n-popover>
+      </h2>
     </div>
     <div class="view-content">
       <n-spin :show="loading">
