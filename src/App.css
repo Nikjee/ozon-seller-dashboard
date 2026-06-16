@@ -883,7 +883,7 @@
 /* View container styles for tab content panels */
 .view-container {
   padding: 1.5rem;
-  max-width: 1400px;
+  max-width: 95%;
   margin: 0 auto;
   width: 100%;
 }
@@ -956,4 +956,13 @@
   .view-content .n-data-table {
     overflow-x: auto;
   }
+}
+
+/* ─── Seamless nested table in expanded rows ─── */
+.n-data-table .n-data-table-td.n-data-table-td--expand {
+  padding: 0 !important;
+}
+
+.n-data-table .n-data-table-td--expand .n-data-table {
+  margin: 0;
 }
