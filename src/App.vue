@@ -12,6 +12,9 @@ import EmptyState from "./components/EmptyState.vue"
 import LoadingOverlay from "./components/LoadingOverlay.vue"
 import ErrorBanner from "./components/ErrorBanner.vue"
 import AccountExpensesPanel from "./components/AccountExpensesPanel.vue"
+import StockAnalytics from './components/StockAnalytics.vue'
+import TransactionTotals from './components/TransactionTotals.vue'
+import AnalyticsDashboard from './components/AnalyticsDashboard.vue'
 import "./App.css"
 
 const { theme, toggle: toggleTheme } = useTheme()
@@ -23,6 +26,7 @@ const { checking: updateChecking, updateVersion, downloading, error: updateError
 const cfgClientId = ref("")
 const cfgApiKey = ref("")
 const configChecked = ref(false)
+const activeView = ref('dashboard')
 
 onMounted(async () => {
   await check()
@@ -89,16 +93,31 @@ async function handleSaveConfig() {
       @refresh="refresh"
     />
     <main class="main container">
-      <LoadingOverlay v-if="loading" />
-      <template v-else-if="error">
-        <ErrorBanner :message="error" @retry="refresh" />
-      </template>
-      <template v-else-if="totals">
-        <StatsBar :totals="totals" :account-expenses="accountExpenses" />
-        <AccountExpensesPanel :account-expenses="accountExpenses" />
-        <ProductTreeTable :products="products" />
-      </template>
-      <EmptyState v-else />
+      <n-tabs v-model:value="activeView" type="line" animated>
+        <n-tab-pane name="dashboard" :tab="t('tabs.dashboard')">
+          <div class="view-container">
+            <LoadingOverlay v-if="loading" />
+            <template v-else-if="error">
+              <ErrorBanner :message="error" @retry="refresh" />
+            </template>
+            <template v-else-if="totals">
+              <StatsBar :totals="totals" :account-expenses="accountExpenses" />
+              <AccountExpensesPanel :account-expenses="accountExpenses" />
+              <ProductTreeTable :products="products" />
+            </template>
+            <EmptyState v-else />
+          </div>
+        </n-tab-pane>
+        <n-tab-pane name="stocks" :tab="t('tabs.stocks')">
+          <StockAnalytics v-if="activeView === 'stocks'" />
+        </n-tab-pane>
+        <n-tab-pane name="totals" :tab="t('tabs.totals')">
+          <TransactionTotals v-if="activeView === 'totals'" />
+        </n-tab-pane>
+        <n-tab-pane name="analytics" :tab="t('tabs.analytics')">
+          <AnalyticsDashboard v-if="activeView === 'analytics'" />
+        </n-tab-pane>
+      </n-tabs>
     </main>
   </div>
 </template>
