@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue"
+import { onMounted, ref, watch } from "vue"
 import { useTheme } from "./composables/useTheme.js"
 import { useDashboard } from "./composables/useDashboard.js"
 import { useI18n } from "./composables/useI18n.js"
@@ -27,6 +27,17 @@ const cfgClientId = ref("")
 const cfgApiKey = ref("")
 const configChecked = ref(false)
 const activeView = ref('dashboard')
+
+// Lazy-load tracking: each view mounts once on first activation and persists
+const stocksActivated = ref(false)
+const totalsActivated = ref(false)
+const analyticsActivated = ref(false)
+
+watch(activeView, (view) => {
+  if (view === 'stocks') stocksActivated.value = true
+  if (view === 'totals') totalsActivated.value = true
+  if (view === 'analytics') analyticsActivated.value = true
+})
 
 onMounted(async () => {
   await check()
@@ -109,13 +120,13 @@ async function handleSaveConfig() {
           </div>
         </n-tab-pane>
         <n-tab-pane name="stocks" :tab="t('tabs.stocks')">
-          <StockAnalytics v-if="activeView === 'stocks'" />
+          <StockAnalytics v-if="stocksActivated" />
         </n-tab-pane>
         <n-tab-pane name="totals" :tab="t('tabs.totals')">
-          <TransactionTotals v-if="activeView === 'totals'" />
+          <TransactionTotals v-if="totalsActivated" />
         </n-tab-pane>
         <n-tab-pane name="analytics" :tab="t('tabs.analytics')">
-          <AnalyticsDashboard v-if="activeView === 'analytics'" />
+          <AnalyticsDashboard v-if="analyticsActivated" />
         </n-tab-pane>
       </n-tabs>
     </main>
