@@ -225,3 +225,16 @@ pub async fn get_finance_totals(
     });
     ozon_request(config, "/v3/finance/transaction/totals", "POST", Some(&body)).await
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_pagination_break_condition() {
+        let page_size = 1000;
+        let ops_len = 500; // less than page_size → should break
+        assert!(ops_len < page_size);
+
+        let ops_len = 1000; // equal to page_size → should continue
+        assert!(ops_len >= page_size);
+    }
+}

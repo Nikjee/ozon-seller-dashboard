@@ -199,3 +199,61 @@ pub fn extract_product_summary(operations: &[Value], sku: i64) -> Value {
         "total_quantity": qty,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_extract_product_costs_returns_zero_for_empty_ops() {
+        let ops = vec![];
+        let result = extract_product_costs(&ops, 12345);
+        let obj = result.as_object().unwrap();
+        for val in obj.values() {
+            assert_eq!(val.as_f64().unwrap(), 0.0);
+        }
+    }
+
+    #[test]
+    fn test_extract_product_costs_matches_sku() {
+        let ops = vec![json!({
+            "amount": -150.00,
+            "operation_type_name": "Комиссия за продажу",
+            "operation_type": "sale_commission",
+            "items": [{"sku": 12345, "name": "Test Product"}]
+        })];
+        let result = extract_product_costs(&ops, 12345);
+        assert_eq!(result["commission"].as_f64().unwrap(), 150.0);
+        assert_eq!(result["acquiring"].as_f64().unwrap(), 0.0);
+    }
+
+    #[test]
+    fn test_extract_product_costs_ignores_other_sku() {
+        let ops = vec![json!({
+            "amount": -150.00,
+            "operation_type_name": "Комиссия за продажу",
+            "operation_type": "sale_commission",
+            "items": [{"sku": 99999, "name": "Other Product"}]
+        })];
+        let result = extract_product_costs(&ops, 12345);
+        let obj = result.as_object().unwrap();
+        for val in obj.values() {
+            assert_eq!(val.as_f64().unwrap(), 0.0);
+        }
+    }
+
+    #[test]
+    fn test_extract_product_summary_calculates_profit() {
+        let ops = vec![json!({
+            "amount": -150.00,
+            "accruals_for_sale": 500.00,
+            "operation_type_name": "Комиссия за продажу",
+            "operation_type": "sale_commission",
+            "items": [{"sku": 12345, "name": "Test Product"}]
+        })];
+        let result = extract_product_summary(&ops, 12345);
+        assert_eq!(result["total_revenue"].as_f64().unwrap(), 500.0);
+        assert!(result["net_profit"].as_f64().unwrap() > 0.0);
+    }
+}

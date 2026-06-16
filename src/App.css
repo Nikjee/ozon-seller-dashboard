@@ -931,4 +931,20 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Naive UI NTabs responsive */
+  .n-tabs .n-tabs-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .n-tabs-nav .n-tabs-tab {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+
+  /* Naive UI NDataTable responsive */
+  .view-content .n-data-table {
+    overflow-x: auto;
+  }
 }
