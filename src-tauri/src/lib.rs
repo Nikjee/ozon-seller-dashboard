@@ -5,6 +5,7 @@ mod expenses;
 mod ozon;
 mod uniteconomy;
 
+use log::info;
 use serde_json::Value;
 use std::sync::Mutex;
 use tauri::State;
@@ -53,7 +54,15 @@ async fn get_dashboard_summary(
             .ok_or_else(|| "Config not loaded. Please configure API keys first.".to_string())?
             .clone()
     };
-    dashboard::build_dashboard_summary(&cfg, month, year).await
+    info!("[CMD] get_dashboard_summary invoked month={} year={}", month, year);
+    let result = dashboard::build_dashboard_summary(&cfg, month, year).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_dashboard_summary OK: products={} totals_keys={:?}",
+            v["products"].as_array().map(|a| a.len()).unwrap_or(0),
+            v["totals"].as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_dashboard_summary FAIL: {}", e),
+    }
+    result
 }
 
 /// Returns the GitHub PAT for updater authentication, embedded at compile time.
@@ -132,9 +141,29 @@ async fn get_finance_totals(
             .ok_or_else(|| "Config not loaded. Please configure API keys first.".to_string())?
             .clone()
     };
-    ozon::get_finance_totals(&cfg, &date_from, &date_to)
+    info!("[CMD] get_finance_totals invoked date_from={} date_to={}", date_from, date_to);
+    let raw = ozon::get_finance_totals(&cfg, &date_from, &date_to)
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    info!("[CMD] get_finance_totals raw keys={:?}", raw.as_object().map(|o| o.keys().collect::<Vec<_>>()));
+
+    // Ozon API response has flat fields at `result.*`. Field names differ from
+    // what the frontend expects — map them to frontend-expected snake_case keys.
+    let result = &raw["result"];
+    let extract = |key: &str| -> f64 {
+        result[key].as_f64().unwrap_or(0.0)
+    };
+
+    Ok(serde_json::json!({
+        "accruals_for_sale": extract("accruals_for_sale"),
+        "total_compensation": extract("compensation_amount"),
+        "sale_commission": extract("sale_commission"),
+        "services_amount": extract("services_amount"),
+        "processing_and_delivery": extract("processing_and_delivery"),
+        "refunds_and_cancellations": extract("refunds_and_cancellations"),
+        "money_transfer": extract("money_transfer"),
+        "others_amount": extract("others_amount"),
+    }))
 }
 
 #[tauri::command]
@@ -148,9 +177,13 @@ async fn get_stock_report(
             .ok_or_else(|| "Config not loaded. Please configure API keys first.".to_string())?
             .clone()
     };
-    analytics::get_stock_report(&cfg)
-        .await
-        .map_err(|e| e.to_string())
+    info!("[CMD] get_stock_report invoked");
+    let result = analytics::get_stock_report(&cfg).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_stock_report OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_stock_report FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -165,9 +198,13 @@ async fn get_stock_analytics(
             .ok_or_else(|| "Config not loaded. Please configure API keys first.".to_string())?
             .clone()
     };
-    analytics::get_stock_analytics(&cfg, &skus)
-        .await
-        .map_err(|e| e.to_string())
+    info!("[CMD] get_stock_analytics invoked skus={:?}", skus);
+    let result = analytics::get_stock_analytics(&cfg, &skus).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_stock_analytics OK: keys={:?} products_len={}", v.as_object().map(|o| o.keys().collect::<Vec<_>>()), v["products"].as_array().map(|a| a.len()).unwrap_or(0)),
+        Err(e) => info!("[CMD] get_stock_analytics FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -185,6 +222,28 @@ async fn get_turnover_data(
     analytics::get_turnover_data(&cfg, &skus)
         .await
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn get_analytics_dashboard_data(
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = {
+        let guard = state.config.lock().map_err(|e| e.to_string())?;
+        guard
+            .as_ref()
+            .ok_or_else(|| "Config not loaded. Please configure API keys first.".to_string())?
+            .clone()
+    };
+    info!("[CMD] get_analytics_dashboard_data invoked");
+    let result = analytics::get_analytics_dashboard_data(&cfg).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_analytics_dashboard_data OK: products={} aggregates={:?}",
+            v["products"].as_array().map(|a| a.len()).unwrap_or(0),
+            v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_analytics_dashboard_data FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -205,6 +264,7 @@ pub fn run() {
             get_stock_report,
             get_stock_analytics,
             get_turnover_data,
+            get_analytics_dashboard_data,
         ])
         .plugin(tauri_plugin_process::init())
         .setup(|app| {

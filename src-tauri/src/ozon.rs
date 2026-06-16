@@ -191,9 +191,46 @@ pub async fn get_analytics_stocks(
     skus: Vec<i64>,
 ) -> Result<Value, String> {
     let body = serde_json::json!({
-        "sku": skus,
+        "skus": skus,
     });
     ozon_request(config, "/v1/analytics/stocks", "POST", Some(&body)).await
+}
+
+/// Get product stock info with cursor pagination from /v4/product/info/stocks
+pub async fn get_product_info_stocks(config: &OzonConfig) -> Result<Vec<Value>, String> {
+    let mut all_items = Vec::new();
+    let mut cursor = String::new();
+
+    loop {
+        let body = serde_json::json!({
+            "limit": 100,
+            "cursor": cursor,
+        });
+
+        let response = ozon_request(
+            config,
+            "/v4/product/info/stocks",
+            "POST",
+            Some(&body),
+        )
+        .await?;
+
+        if let Some(items) = response["items"].as_array() {
+            all_items.extend(items.clone());
+        }
+
+        // Check if there's a next cursor — API returns cursor in response
+        cursor = response["cursor"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
+
+        if cursor.is_empty() {
+            break;
+        }
+    }
+
+    Ok(all_items)
 }
 
 pub async fn get_stocks_turnover(
@@ -215,12 +252,15 @@ pub async fn get_finance_totals(
     date_from: &str,
     date_to: &str,
 ) -> Result<Value, String> {
+    // Ozon API requires ISO 8601 format with time component:
+    // "2019-11-25T00:00:00.000Z" — and the "date" object must be
+    // at the top level (not wrapped in a "filter" key).
+    let from_iso = format!("{}T00:00:00.000Z", date_from);
+    let to_iso = format!("{}T23:59:59.999Z", date_to);
     let body = serde_json::json!({
-        "filter": {
-            "date": {
-                "from": date_from,
-                "to": date_to,
-            }
+        "date": {
+            "from": from_iso,
+            "to": to_iso,
         }
     });
     ozon_request(config, "/v3/finance/transaction/totals", "POST", Some(&body)).await
