@@ -18,21 +18,21 @@ function gradeTagType(grade) {
   return map[grade] || 'default'
 }
 
-const columns = [
-  { title: 'Name', key: 'name', width: 200 },
-  { title: 'SKU', key: 'sku', width: 100 },
-  { title: 'Available Stock', key: 'available_stock_count' },
-  { title: 'ADS', key: 'ads' },
-  { title: 'IDC', key: 'idc' },
+const columns = computed(() => [
+  { title: t('analytics.colName'), key: 'name', width: 200 },
+  { title: t('analytics.colSku'), key: 'sku', width: 100 },
+  { title: t('analytics.colAvailableStock'), key: 'available_stock_count' },
+  { title: t('analytics.colAds'), key: 'ads' },
+  { title: t('analytics.colIdc'), key: 'idc' },
   { 
-    title: 'Turnover Grade', 
+    title: t('analytics.colTurnoverGrade'), 
     key: 'turnover_grade',
     render(row) {
       return h(NTag, { type: gradeTagType(row.turnover_grade) }, () => row.turnover_grade)
     }
   },
-  { title: 'Days w/o Sales', key: 'days_without_sales' },
-]
+  { title: t('analytics.colDaysWithoutSales'), key: 'days_without_sales' },
+])
 </script>
 
 <template>
@@ -44,17 +44,17 @@ const columns = [
       <n-spin :show="loading">
         <template v-if="error">
           <n-alert type="error" closable>
-            <template #header>Error</template>
+            <template #header>{{ t('analytics.error') }}</template>
             {{ error }}
           </n-alert>
-          <n-button @click="refresh" style="margin-top: 12px">Retry</n-button>
+          <n-button @click="refresh" style="margin-top: 12px">{{ t('analytics.retry') }}</n-button>
         </template>
         <template v-else-if="data">
           <!-- Summary stats -->
           <div class="stats-grid">
-            <n-card><n-statistic label="Stock Balance" :value="stockBalanceTotal" /></n-card>
-            <n-card><n-statistic label="Overall ADS" :value="overallAds" /></n-card>
-            <n-card><n-statistic label="Overall IDC" :value="overallIdc" /></n-card>
+            <n-card><n-statistic :label="t('analytics.stockBalance')" :value="stockBalanceTotal" /></n-card>
+            <n-card><n-statistic :label="t('analytics.overallAds')" :value="overallAds" /></n-card>
+            <n-card><n-statistic :label="t('analytics.overallIdc')" :value="overallIdc" /></n-card>
           </div>
           
           <!-- Grade distribution badges -->

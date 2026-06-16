@@ -129,7 +129,7 @@ function formatCost(val) {
     <div class="enriched-expanded">
       <!-- Cost breakdown grid -->
       <div class="enriched-costs">
-        <div class="enriched-costs__title">Cost Breakdown</div>
+        <div class="enriched-costs__title">{{ t('enriched.costBreakdown') }}</div>
         <div class="enriched-costs__grid">
           <div v-for="cost in costItems" :key="cost.key" class="enriched-costs__item">
             <span class="enriched-costs__label">{{ cost.label }}</span>
@@ -141,57 +141,16 @@ function formatCost(val) {
       <!-- Postings (existing pattern) -->
       <div class="product-row__children" v-if="postings.length">
         <div class="product-row__children-header">
-          <span class="product-row__children-h">Posting</span>
-          <span class="product-row__children-h product-row__children-h--date">Date</span>
-          <span class="product-row__children-h product-row__children-h--amount">Price</span>
-          <span class="product-row__children-h product-row__children-h--amount">Commission</span>
-          <span class="product-row__children-h product-row__children-h--amount">Delivery</span>
-          <span class="product-row__children-h product-row__children-h--amount">Returns</span>
-          <span class="product-row__children-h product-row__children-h--net">Net</span>
+          <span class="product-row__children-h">{{ t('enriched.posting') }}</span>
+          <span class="product-row__children-h product-row__children-h--date">{{ t('enriched.date') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('enriched.price') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('commission') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('delivery') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('returns') }}</span>
+          <span class="product-row__children-h product-row__children-h--net">{{ t('enriched.net') }}</span>
         </div>
         <PostingRow v-for="p in postings" :key="p.posting_number" :posting="p" />
       </div>
     </div>
   </template>
 </template>
-
-<style scoped>
-.enriched-expanded {
-  padding: 16px;
-}
-
-.enriched-costs__title {
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 12px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.enriched-costs__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 4px 16px;
-  margin-bottom: 20px;
-}
-
-.enriched-costs__item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0;
-  font-size: 0.85rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.enriched-costs__label {
-  color: var(--text-subtle);
-}
-
-.enriched-costs__value {
-  font-weight: 600;
-  font-family: var(--font-mono);
-  font-feature-settings: 'tnum';
-}
-</style>
