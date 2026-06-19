@@ -8,22 +8,40 @@ export function useDashboard() {
   const data = ref(null)
   const loading = ref(false)
   const error = ref(null)
+  const fboTotals = ref(null)
+  const fboLoading = ref(false)
 
   async function load() {
     loading.value = true
     error.value = null
+    fboTotals.value = null
     try {
       data.value = await invoke('get_dashboard_summary', {
         month: month.value,
         year: year.value
       })
       console.log("PRODUCTS", data.value);
-
+      loadFboTotals()
     } catch (e) {
       error.value = typeof e === 'string' ? e : (e.message || 'Unknown error')
       data.value = null
     } finally {
       loading.value = false
+    }
+  }
+
+  async function loadFboTotals() {
+    fboLoading.value = true
+    try {
+      fboTotals.value = await invoke('get_fbo_totals', {
+        month: month.value,
+        year: year.value
+      })
+    } catch (e) {
+      console.error('FBO totals unavailable:', e)
+      fboTotals.value = null
+    } finally {
+      fboLoading.value = false
     }
   }
 
@@ -71,6 +89,8 @@ export function useDashboard() {
     products,
     notDeliveredProducts,
     totalProducts,
+    fboTotals,
+    fboLoading,
     refresh
   }
 }

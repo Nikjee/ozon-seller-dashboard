@@ -2,7 +2,7 @@
 import { useI18n } from '../composables/useI18n.js'
 import { formatRub, formatInt } from '../utils.js'
 
-defineProps({ totals: Object, accountExpenses: Object })
+defineProps({ totals: Object, accountExpenses: Object, fboTotals: Object })
 const { t } = useI18n()
 </script>
 
@@ -12,6 +12,11 @@ const { t } = useI18n()
       <div class="stat-card__label">{{ t('productsSold') }}</div>
       <div class="stat-card__value">{{ formatInt(totals.total_quantity) }}</div>
       <div class="stat-card__sub">{{ formatInt(totals.product_count) }} {{ t('positions') }}</div>
+    </div>
+    <div v-if="fboTotals" class="stat-card">
+      <div class="stat-card__label">{{ t('orders') }}</div>
+      <div class="stat-card__value">{{ formatInt(fboTotals.total_products) }}</div>
+      <div class="stat-card__sub">{{ formatInt(fboTotals.delivered_postings) }} {{ t('delivered') }} / {{ formatInt(fboTotals.total_postings - fboTotals.delivered_postings) }} {{ t('inTransit') }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-card__label">{{ t('revenue') }}</div>

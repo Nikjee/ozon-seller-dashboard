@@ -18,7 +18,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard.vue'
 import "./App.css"
 
 const { theme, toggle: toggleTheme } = useTheme()
-const { month, year, months, years, monthLabel, loading, error, totals, accountExpenses, products, notDeliveredProducts, refresh } = useDashboard()
+const { month, year, months, years, monthLabel, loading, error, totals, accountExpenses, products, notDeliveredProducts, fboTotals, refresh } = useDashboard()
 const { locale, t, toggle: toggleLang } = useI18n()
 const { configValid, configMessage, saving, check, save } = useConfig()
 const { checkForUpdates } = useUpdater()
@@ -109,7 +109,7 @@ async function handleSaveConfig() {
                 <ErrorBanner :message="error" @retry="refresh" />
               </template>
               <template v-else-if="totals">
-                <StatsBar :totals="totals" :account-expenses="accountExpenses" />
+                <StatsBar :totals="totals" :account-expenses="accountExpenses" :fbo-totals="fboTotals" />
                 <AccountExpensesPanel :account-expenses="accountExpenses" />
                 <ProductTreeTable :products="products" :not-delivered="notDeliveredProducts" />
               </template>
