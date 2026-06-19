@@ -9,6 +9,7 @@ use log::info;
 use serde_json::Value;
 use std::sync::Mutex;
 use tauri::State;
+use tauri_plugin_dialog;
 
 use crate::config::OzonConfig;
 
@@ -216,6 +217,7 @@ pub fn run() {
             get_turnover_data,
             get_analytics_dashboard_data,
         ])
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
         .setup(|app| {
             if cfg!(debug_assertions) {

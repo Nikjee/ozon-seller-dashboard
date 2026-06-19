@@ -21,7 +21,7 @@ const { theme, toggle: toggleTheme } = useTheme()
 const { month, year, months, years, monthLabel, loading, error, totals, accountExpenses, products, refresh } = useDashboard()
 const { locale, t, toggle: toggleLang } = useI18n()
 const { configValid, configMessage, saving, check, save } = useConfig()
-const { checking: updateChecking, updateVersion, downloading, error: updateError, checkForUpdates, installUpdate } = useUpdater()
+const { checkForUpdates } = useUpdater()
 
 const cfgClientId = ref("")
 const cfgApiKey = ref("")
@@ -84,17 +84,6 @@ async function handleSaveConfig() {
     </div>
   </div>
   <div v-else class="app" :class="theme">
-    <div v-if="updateVersion" class="update-banner">
-      <span>Update {{ updateVersion }} available</span>
-      <button :disabled="downloading" @click="installUpdate">
-        {{ downloading ? 'Downloading...' : 'Install' }}
-      </button>
-      <button class="update-dismiss" @click="updateVersion = null">×</button>
-    </div>
-    <div v-else-if="updateError" class="update-banner update-banner--error">
-      <span>Update check failed: {{ updateError }}</span>
-      <button class="update-dismiss" @click="updateError = null">×</button>
-    </div>
     <DashboardHeader
       :month="month" :year="year" :months="months" :years="years"
       :month-label="monthLabel" :theme="theme"
