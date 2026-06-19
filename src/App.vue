@@ -18,7 +18,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard.vue'
 import "./App.css"
 
 const { theme, toggle: toggleTheme } = useTheme()
-const { month, year, months, years, monthLabel, loading, error, totals, accountExpenses, products, refresh } = useDashboard()
+const { month, year, months, years, monthLabel, loading, error, totals, accountExpenses, products, notDeliveredProducts, refresh } = useDashboard()
 const { locale, t, toggle: toggleLang } = useI18n()
 const { configValid, configMessage, saving, check, save } = useConfig()
 const { checkForUpdates } = useUpdater()
@@ -111,7 +111,7 @@ async function handleSaveConfig() {
               <template v-else-if="totals">
                 <StatsBar :totals="totals" :account-expenses="accountExpenses" />
                 <AccountExpensesPanel :account-expenses="accountExpenses" />
-                <ProductTreeTable :products="products" />
+                <ProductTreeTable :products="products" :not-delivered="notDeliveredProducts" />
               </template>
               <EmptyState v-else />
             </div>
