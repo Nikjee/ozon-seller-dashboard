@@ -1,7 +1,8 @@
 <script setup>
-import { computed, h, onMounted, ref } from 'vue'
-import { NTag, NCard, NStatistic, NDataTable, NSpin, NAlert, NEmpty, NButton, NCheckbox, NSpace, NPopover } from 'naive-ui'
+import { computed, h, onMounted } from 'vue'
+import { NTag, NCard, NStatistic, NDataTable, NSpin, NAlert, NEmpty, NButton } from 'naive-ui'
 import { useI18n } from '../composables/useI18n.js'
+import { useColumnSettings } from '../composables/useColumnSettings.js'
 import { useAnalyticsDashboard } from '../composables/useAnalyticsDashboard.js'
 import { formatRub, formatRubCompact, formatInt } from '../utils.js'
 
@@ -25,13 +26,6 @@ const filteredGrades = computed(() => {
 })
 
 const R_AN = { resizable: true, minWidth: 60, sorter: 'default' }
-const columnVisibility = ref({})
-const showColumnSettings = ref(false)
-
-function toggleColumn(key) {
-  const current = columnVisibility.value[key]
-  columnVisibility.value = { ...columnVisibility.value, [key]: current === undefined ? false : !current }
-}
 
 const analyticsColumns = computed(() => [
   { title: t('analytics.colName'), key: 'name', width: 200, ...R_AN },
@@ -50,12 +44,11 @@ const analyticsColumns = computed(() => [
   { title: t('analytics.colDaysWithoutSales'), key: 'days_without_sales', ...R_AN, render: (row) => formatInt(row.days_without_sales) },
 ])
 
-const visibleColumns = computed(() =>
-  analyticsColumns.value.filter(col => columnVisibility.value[col.key] !== false)
-)
+const { columnVisibility, showColumnSettings, visibleColumns, toggleColumn, settingsColumn } = useColumnSettings('analytics', analyticsColumns, () => t('table.columns'))
 
+const displayColumns = computed(() => [...visibleColumns.value, settingsColumn.value])
 const scrollX = computed(() =>
-  visibleColumns.value.reduce((sum, col) => sum + (col.width || 80), 0) + 20
+  displayColumns.value.reduce((sum, col) => sum + (col.width || 80), 0) + 20
 )
 </script>
 
@@ -94,43 +87,8 @@ const scrollX = computed(() =>
           
           <!-- Product table -->
           <div class="table-wrapper">
-            <div class="table-toolbar">
-              <n-popover
-                placement="bottom-end"
-                trigger="click"
-                :show="showColumnSettings"
-                @update:show="showColumnSettings = $event"
-                style="max-height: 400px; overflow-y: auto;"
-              >
-                <template #trigger>
-                  <n-button size="tiny" quaternary circle class="table-settings-btn">
-                    <template #icon>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                      </svg>
-                    </template>
-                  </n-button>
-                </template>
-                <div style="min-width: 200px;">
-                  <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">{{ t('table.columns') }}</div>
-                  <n-space vertical size="small">
-                    <template v-for="col in analyticsColumns" :key="col.key">
-                      <div v-if="col.type !== 'expand'">
-                        <n-checkbox
-                          :checked="columnVisibility[col.key] !== false"
-                          @update:checked="toggleColumn(col.key)"
-                        >
-                          {{ col.title || col.key }}
-                        </n-checkbox>
-                      </div>
-                    </template>
-                  </n-space>
-                </div>
-              </n-popover>
-            </div>
             <n-data-table 
-              :columns="visibleColumns" 
+              :columns="displayColumns" 
               :data="products" 
               :bordered="false" 
               :single-line="true" 
@@ -148,18 +106,5 @@ const scrollX = computed(() =>
 <style scoped>
 .table-wrapper {
   position: relative;
-}
-.table-toolbar {
-  position: absolute;
-  top: -36px;
-  right: 0;
-  z-index: 10;
-}
-.table-settings-btn {
-  opacity: 0.5;
-  transition: opacity 0.2s;
-}
-.table-settings-btn:hover {
-  opacity: 1;
 }
 </style>

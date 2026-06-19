@@ -1,15 +1,18 @@
 <script setup>
 import { h, ref, computed, onMounted, onUnmounted } from 'vue'
-import { NDataTable, NTag, NPopover, NButton, NCheckbox, NSpace } from 'naive-ui'
+import { NDataTable, NTag, NTabs, NTabPane } from 'naive-ui'
 import { useI18n } from '../composables/useI18n.js'
+import { useColumnSettings } from '../composables/useColumnSettings.js'
 import { formatRubCompact, formatInt } from '../utils.js'
 import PostingTable from './PostingTable.vue'
 
 const props = defineProps({
-  products: Array
+  products: Array,
+  notDelivered: Array
 })
 
 const { t } = useI18n()
+const activeTab = ref('delivered')
 
 const expandedRowKeys = ref([])
 
@@ -54,7 +57,6 @@ function profitRenderFor(key) {
   }
 }
 
-// Plain number renderer (no currency formatting — for stocks, counts)
 function plainNumRenderFor(key) {
   return (row) => {
     const val = resolveDotPath(row, key)
@@ -63,7 +65,6 @@ function plainNumRenderFor(key) {
   }
 }
 
-// Commission badge renderer — reads product_info.commissions array, shows NTag badges with popover
 function commissionBadgeRender() {
   return (row) => {
     const commissions = row?.product_info?.commissions
@@ -85,7 +86,6 @@ function commissionBadgeRender() {
   }
 }
 
-// Image thumbnail renderer — renders primary_image as small img
 function imgRender() {
   return (row) => {
     const url = row?.product_info?.primary_image
@@ -98,7 +98,6 @@ function imgRender() {
   }
 }
 
-// Profit share % — profitPerUnit / product_info.price * 100
 function profitShareRender() {
   return (row) => {
     const price = row?.product_info?.price
@@ -110,7 +109,6 @@ function profitShareRender() {
   }
 }
 
-// Color index renderer — shows NTag badge with color index type
 function colorIndexRender() {
   return (row) => {
     const code = row?.product_info?.color_index
@@ -137,7 +135,12 @@ const sortBy = (key) => (a, b) => {
 
 const R = { resizable: true, minWidth: 60, sorter: 'default' }
 
-const columns = computed(() => [
+function expandedRowRender(row) {
+  return h(PostingTable, { postings: row.postings || [] })
+}
+
+// Delivered columns (existing, with expand + all cost/profit columns)
+const deliveredColumns = computed(() => [
   { type: 'expand', fixed: 'left', renderExpand: expandedRowRender },
   {
     title: t('table.name'),
@@ -159,7 +162,7 @@ const columns = computed(() => [
   { title: t('table.stocksReserved'), key: 'product_info.stocks_reserved', width: 90, ...R, sorter: sortBy('product_info.stocks_reserved'), render: plainNumRenderFor('product_info.stocks_reserved') },
   { title: t('table.colorIndex'), key: 'product_info.color_index', width: 120, ...R, sorter: sortBy('product_info.color_index'), render: colorIndexRender() },
   { title: t('table.scheme'), key: 'product_info.scheme', width: 100, ...R, sorter: sortBy('product_info.scheme') },
-  { title: t('table.totalRevenue'), key: 'totalRevenue', width: 120, ...R, render: numRenderFor('totalRevenue') },
+  { title: t('table.totalRevenue'), key: 'totalRevenue', width: 120, ...R, sorter: sortBy('totalRevenue'), render: numRenderFor('totalRevenue') },
   { title: t('table.commission'), key: 'costs.commission', width: 110, ...R, sorter: sortBy('costs.commission'), render: costRenderFor('costs.commission') },
   { title: t('table.acquiring'), key: 'costs.acquiring', width: 100, ...R, sorter: sortBy('costs.acquiring'), render: costRenderFor('costs.acquiring') },
   { title: t('table.orderProcessing'), key: 'costs.order_processing', width: 130, ...R, sorter: sortBy('costs.order_processing'), render: costRenderFor('costs.order_processing') },
@@ -180,9 +183,9 @@ const columns = computed(() => [
   { title: t('table.partnerPrograms'), key: 'costs.partner_programs', width: 140, ...R, sorter: sortBy('costs.partner_programs'), render: costRenderFor('costs.partner_programs') },
   { title: t('table.compensation'), key: 'costs.compensation', width: 120, ...R, sorter: sortBy('costs.compensation'), render: costRenderFor('costs.compensation') },
   { title: t('table.otherServices'), key: 'costs.other_services', width: 110, ...R, sorter: sortBy('costs.other_services'), render: costRenderFor('costs.other_services') },
-  { title: t('table.totalCosts'), key: 'totalCosts', width: 120, ...R, render: costRenderFor('totalCosts'), cellProps: () => ({ style: 'font-weight: 700' }) },
-  { title: t('table.netProfit'), key: 'netProfit', width: 120, ...R, render: profitRenderFor('netProfit') },
-  { title: t('table.profitPerUnit'), key: 'profitPerUnit', width: 110, ...R, render: profitRenderFor('profitPerUnit') },
+  { title: t('table.totalCosts'), key: 'totalCosts', width: 120, ...R, sorter: sortBy('totalCosts'), render: costRenderFor('totalCosts'), cellProps: () => ({ style: 'font-weight: 700' }) },
+  { title: t('table.netProfit'), key: 'netProfit', width: 120, ...R, sorter: sortBy('netProfit'), render: profitRenderFor('netProfit') },
+  { title: t('table.profitPerUnit'), key: 'profitPerUnit', width: 110, ...R, sorter: sortBy('profitPerUnit'), render: profitRenderFor('profitPerUnit') },
   { title: t('table.profitShare'), key: 'profitShare', width: 100, ...R, sorter: (a, b) => {
     const shareA = a.product_info?.price ? (a.profitPerUnit / a.product_info.price) * 100 : null
     const shareB = b.product_info?.price ? (b.profitPerUnit / b.product_info.price) * 100 : null
@@ -190,35 +193,36 @@ const columns = computed(() => [
     if (shareB == null) return -1
     return shareA - shareB
   }, render: profitShareRender() },
-  { title: t('table.totalQuantity'), key: 'totalQuantity', width: 100, ...R, render: plainNumRenderFor('totalQuantity') },
+  { title: t('table.totalQuantity'), key: 'totalQuantity', width: 100, ...R, sorter: sortBy('totalQuantity'), render: plainNumRenderFor('totalQuantity') },
 ])
 
-// Column visibility
-const columnVisibility = ref({})
-const showColumnSettings = ref(false)
+// Not-delivered columns: product info only, no cost/profit columns
+const INFO_KEYS = new Set([
+  'name', 'product_info.primary_image', 'offer_id', 'sku',
+  'product_info.price', 'product_info.min_price', 'product_info.old_price', 'product_info.net_price',
+  'product_info.stocks_present', 'product_info.stocks_reserved',
+  'product_info.color_index', 'product_info.scheme',
+])
 
-const visibleColumns = computed(() =>
-  columns.value.filter(col => col.type === 'expand' || columnVisibility.value[col.key] !== false)
+const notDeliveredColumns = computed(() =>
+  deliveredColumns.value.filter(c => c.type !== 'expand' && INFO_KEYS.has(c.key))
 )
 
-function toggleColumn(key) {
-  const current = columnVisibility.value[key]
-  columnVisibility.value = { ...columnVisibility.value, [key]: current === undefined ? false : !current }
-}
+const { columnVisibility, showColumnSettings, visibleColumns: visibleDeliveredColumns, toggleColumn, settingsColumn } = useColumnSettings('delivered', deliveredColumns, () => t('table.columns'))
 
+const displayDeliveredColumns = computed(() => [...visibleDeliveredColumns.value, settingsColumn.value])
 const EXPAND_COL_WIDTH = 48
 
-const scrollX = computed(() =>
-  visibleColumns.value.reduce((sum, col) => sum + (col.width || 0), 0) + EXPAND_COL_WIDTH + 40
+const deliveredScrollX = computed(() =>
+  displayDeliveredColumns.value.reduce((sum, col) => sum + (col.width || 0), 0) + EXPAND_COL_WIDTH + 40
 )
 
-function expandedRowRender(row) {
-  return h(PostingTable, { postings: row.postings || [] })
-}
+const notDeliveredScrollX = computed(() =>
+  notDeliveredColumns.value.reduce((sum, col) => sum + (col.width || 0), 0) + EXPAND_COL_WIDTH + 40
+)
 
-const rowKey = row => row.sku
+const rowKey = row => row.product_id ?? row.sku
 
-// Reactive table height
 const tableMaxHeight = ref(Math.max(400, window.innerHeight - 320))
 
 function updateTableHeight() {
@@ -229,71 +233,38 @@ onUnmounted(() => window.removeEventListener('resize', updateTableHeight))
 </script>
 
 <template>
-  <div class="table-wrapper">
-    <div class="table-toolbar">
-      <n-popover
-        placement="bottom-end"
-        trigger="click"
-        :show="showColumnSettings"
-        @update:show="showColumnSettings = $event"
-        style="max-height: 400px; overflow-y: auto;"
-      >
-        <template #trigger>
-          <n-button size="tiny" quaternary circle class="table-settings-btn">
-            <template #icon>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </template>
-          </n-button>
-        </template>
-        <div style="min-width: 220px;">
-          <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">{{ t('table.columns') }}</div>
-          <n-space vertical size="small">
-            <template v-for="col in columns" :key="col.key">
-              <div v-if="col.type !== 'expand'">
-                <n-checkbox
-                  :checked="columnVisibility[col.key] !== false"
-                  @update:checked="toggleColumn(col.key)"
-                >
-                  {{ col.title || col.key }}
-                </n-checkbox>
-              </div>
-            </template>
-          </n-space>
-        </div>
-      </n-popover>
-    </div>
-    <n-data-table
-      :columns="visibleColumns"
-      :data="products"
-      :bordered="false"
-      :single-line="true"
-      :max-height="tableMaxHeight"
-      :scroll-x="scrollX"
-      :row-key="rowKey"
-      :expanded-row-keys="expandedRowKeys"
-      @update:expanded-row-keys="onExpandedRowKeysChange"
-    />
-  </div>
+  <n-tabs v-model:value="activeTab" type="line" size="small">
+    <n-tab-pane name="delivered" :tab="`${t('tabs.delivered')} (${(products || []).length})`">
+      <div class="table-wrapper">
+        <n-data-table
+          :columns="displayDeliveredColumns"
+          :data="products"
+          :bordered="false"
+          :single-line="true"
+          :max-height="tableMaxHeight"
+          :scroll-x="deliveredScrollX"
+          :row-key="rowKey"
+          :expanded-row-keys="expandedRowKeys"
+          @update:expanded-row-keys="onExpandedRowKeysChange"
+        />
+      </div>
+    </n-tab-pane>
+    <n-tab-pane name="notDelivered" :tab="`${t('tabs.notDelivered')} (${(notDelivered || []).length})`">
+      <n-data-table
+        :columns="notDeliveredColumns"
+        :data="notDelivered"
+        :bordered="false"
+        :single-line="true"
+        :max-height="tableMaxHeight"
+        :scroll-x="notDeliveredScrollX"
+        :row-key="rowKey"
+      />
+    </n-tab-pane>
+  </n-tabs>
 </template>
 <style>
 .table-wrapper {
   position: relative;
-}
-.table-toolbar {
-  position: absolute;
-  top: -32px;
-  right: 0;
-  z-index: 10;
-}
-.table-settings-btn {
-  opacity: 0.5;
-  transition: opacity 0.2s;
-}
-.table-settings-btn:hover {
-  opacity: 1;
 }
 .n-data-table-tr.n-data-table-tr--expanded > .n-data-table-td.n-data-table-td--last-col{
   padding: 0 !important;
