@@ -317,3 +317,63 @@ pub async fn get_finance_totals(
     ozon_request(config, "/v3/finance/transaction/totals", "POST", Some(&body)).await
 }
 
+pub async fn get_fbo_posting_totals(
+    config: &OzonConfig,
+    month: u32,
+    year: i32,
+) -> Result<Value, String> {
+    let padded = format!("{:02}", month);
+    let from_iso = format!("{}-{}-01T00:00:00.000Z", year, padded);
+    let days_in_month = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 => { if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) { 29 } else { 28 } }
+        _ => 30,
+    };
+    let to_iso = format!("{}-{}-{:02}T23:59:59.999Z", year, padded, days_in_month);
+
+    let mut total = 0u64;
+    let mut delivered = 0u64;
+    let mut total_products = 0u64;
+    let mut cursor = String::new();
+
+    loop {
+        let body = serde_json::json!({
+            "cursor": cursor,
+            "filter": {
+                "since": from_iso,
+                "to": to_iso,
+            },
+            "limit": 100,
+            "dir": "ASC",
+        });
+        let resp = ozon_request(config, "/v3/posting/fbo/list", "POST", Some(&body)).await?;
+        if let Some(postings) = resp["postings"].as_array() {
+            for p in postings {
+                total += 1;
+                if p["status"].as_str() == Some("delivered") {
+                    delivered += 1;
+                }
+                if let Some(products) = p["products"].as_array() {
+                    for pr in products {
+                        total_products += pr["quantity"].as_u64().unwrap_or(1);
+                    }
+                }
+            }
+        }
+        let has_next = resp["has_next"].as_bool().unwrap_or(false);
+        if has_next {
+            cursor = resp["cursor"].as_str().unwrap_or("").to_string();
+            if cursor.is_empty() { break; }
+        } else {
+            break;
+        }
+    }
+
+    Ok(serde_json::json!({
+        "total_postings": total,
+        "delivered_postings": delivered,
+        "total_products": total_products,
+    }))
+}
+

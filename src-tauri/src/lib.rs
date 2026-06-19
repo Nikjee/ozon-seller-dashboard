@@ -230,6 +230,16 @@ async fn get_analytics_dashboard_data(
     result.map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+async fn get_fbo_totals(
+    month: u32,
+    year: i32,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    ozon::get_fbo_posting_totals(&cfg, month, year).await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
@@ -250,6 +260,7 @@ pub fn run() {
             get_turnover_data,
             get_finance_detailed,
             get_analytics_dashboard_data,
+            get_fbo_totals,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init());

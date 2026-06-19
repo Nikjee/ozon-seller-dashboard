@@ -189,7 +189,11 @@ pub async fn build_dashboard_summary(
                 };
 
                 let seller_price = op["accruals_for_sale"].as_f64().unwrap_or(0.0);
-                if seller_price <= 0.0 { continue; }
+                let is_delivery = op["operation_type"]
+                    .as_str()
+                    .map(|t| t == "OperationAgentDeliveredToCustomer")
+                    .unwrap_or(false);
+                if !is_delivery { continue; }
                 let commission_amount = (op["sale_commission"].as_f64().unwrap_or(0.0)).abs();
                 let field_delivery = (op["delivery_charge"].as_f64().unwrap_or(0.0)).abs();
                 let field_return = (op["return_delivery_charge"].as_f64().unwrap_or(0.0)).abs();
