@@ -35,6 +35,7 @@ export function useDashboard() {
   const accountExpenses = computed(() => data.value?.account_expenses || null)
   const products = computed(() => data.value?.products || [])
   const notDeliveredProducts = computed(() => data.value?.not_delivered || [])
+  const totalProducts = computed(() => data.value?.total_products || 0)
 
   const months = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -69,6 +70,7 @@ export function useDashboard() {
     accountExpenses,
     products,
     notDeliveredProducts,
+    totalProducts,
     refresh
   }
 }

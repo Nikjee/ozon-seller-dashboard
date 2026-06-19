@@ -71,15 +71,28 @@ async fn ozon_request(
 
 pub async fn get_products(
     config: &OzonConfig,
-    last_id: &str,
     limit: i64,
-) -> Result<Value, String> {
-    let body = serde_json::json!({
-        "filter": { "visibility": "ALL" },
-        "last_id": last_id,
-        "limit": limit,
-    });
-    ozon_request(config, "/v3/product/list", "POST", Some(&body)).await
+) -> Result<(Vec<Value>, i64), String> {
+    let mut all_items: Vec<Value> = Vec::new();
+    let mut total: i64 = 0;
+    let mut last_id = String::new();
+    loop {
+        let body = serde_json::json!({
+            "filter": { "visibility": "ALL" },
+            "last_id": last_id,
+            "limit": limit,
+        });
+        let response = ozon_request(config, "/v3/product/list", "POST", Some(&body)).await?;
+        if let Some(items) = response["result"]["items"].as_array() {
+            all_items.extend(items.clone());
+        }
+        if let Some(t) = response["result"]["total"].as_i64() {
+            total = t;
+        }
+        last_id = response["result"]["last_id"].as_str().unwrap_or("").to_string();
+        if last_id.is_empty() { break; }
+    }
+    Ok((all_items, total))
 }
 
 /// Fetch rich product data for a batch of product IDs via /v3/product/info/list.

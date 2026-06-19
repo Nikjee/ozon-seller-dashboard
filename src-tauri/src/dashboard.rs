@@ -45,18 +45,14 @@ pub async fn build_dashboard_summary(
 ) -> Result<Value, String> {
     let (from, to) = month_date_range(month, year);
 
-    let (products_result, realization_report, transactions_result) = tokio::try_join!(
-        get_products(config, "", 1000),
+    let ((all_products, total_products_count), realization_report, transactions_result) = tokio::try_join!(
+        get_products(config, 1000),
         get_realization_report(config, month, year),
         get_finance_transactions(config, &from, &to),
     )?;
 
-    let items = products_result["result"]["items"]
-        .as_array()
-        .map(|a| a.as_slice())
-        .unwrap_or(&[]);
     let mut product_map: HashMap<i64, Value> = HashMap::new();
-    for p in items {
+    for p in &all_products {
         if let Some(pid) = p["product_id"].as_i64() {
             product_map.insert(pid, p.clone());
         }
@@ -588,5 +584,6 @@ pub async fn build_dashboard_summary(
         },
         "products": tree,
         "not_delivered": not_delivered,
+        "total_products": total_products_count,
     }))
 }
