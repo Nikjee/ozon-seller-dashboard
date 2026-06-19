@@ -193,6 +193,7 @@ pub async fn build_dashboard_summary(
                 };
 
                 let seller_price = op["accruals_for_sale"].as_f64().unwrap_or(0.0);
+                if seller_price <= 0.0 { continue; }
                 let commission_amount = (op["sale_commission"].as_f64().unwrap_or(0.0)).abs();
                 let field_delivery = (op["delivery_charge"].as_f64().unwrap_or(0.0)).abs();
                 let field_return = (op["return_delivery_charge"].as_f64().unwrap_or(0.0)).abs();
@@ -341,6 +342,18 @@ pub async fn build_dashboard_summary(
 
         let product_summary = extract_product_summary(all_ops, *sku);
 
+        let mut product_costs = product_summary["costs"].clone();
+        if let Some(obj) = product_costs.as_object_mut() {
+            obj.insert("delivery_to_pickup".into(), Value::from(total_delivery));
+            obj.insert("commission".into(), Value::from(total_commission));
+            obj.insert("return_logistics".into(), Value::from(total_returns));
+        }
+
+        let product_total_costs: f64 = product_costs
+            .as_object()
+            .map(|obj| obj.values().filter_map(|v| v.as_f64()).sum())
+            .unwrap_or(0.0);
+
         tree.push(serde_json::json!({
             "sku": sku,
             "name": name,
@@ -419,10 +432,10 @@ pub async fn build_dashboard_summary(
                 "total_expenses": total_expenses,
                 "net_profit": net_profit,
             },
-            "costs": product_summary["costs"],
+            "costs": product_costs,
             "totalRevenue": product_summary["total_revenue"],
-            "totalCosts": product_summary["total_costs"],
-            "netProfit": product_summary["net_profit"],
+            "totalCosts": product_total_costs,
+            "netProfit": product_summary["total_revenue"].as_f64().unwrap_or(0.0) - product_total_costs,
             "profitPerUnit": product_summary["profit_per_unit"],
             "totalQuantity": product_summary["total_quantity"],
             "postings": sorted_postings,
@@ -478,6 +491,83 @@ pub async fn build_dashboard_summary(
     let product_revenue: f64 = tree.iter().map(|p| p["summary"]["total_revenue"].as_f64().unwrap_or(0.0)).sum();
     let product_expenses: f64 = tree.iter().map(|p| p["summary"]["total_expenses"].as_f64().unwrap_or(0.0)).sum();
 
+    // Build not_delivered: products in product_map with zero sales in this period
+    let delivered_ids: std::collections::HashSet<i64> = tree.iter().filter_map(|p| p["product_id"].as_i64()).collect();
+    let mut not_delivered: Vec<Value> = Vec::new();
+    for (pid, p) in &product_map {
+        if delivered_ids.contains(pid) { continue; }
+        let product_info = product_info_map.get(pid);
+        let product_prices = product_prices_map.get(pid);
+        let product_name = product_info
+            .and_then(|info| info["name"].as_str().map(String::from))
+            .or_else(|| p["offer_id"].as_str().map(String::from))
+            .unwrap_or_default();
+        let fbo = p["has_fbo_stocks"].as_bool().unwrap_or(false);
+        let fbs = p["has_fbs_stocks"].as_bool().unwrap_or(false);
+        let rfbs = product_prices.map_or(false, |pp| pp["commissions"]["sales_percent_rfbs"].as_f64().unwrap_or(0.0) > 0.0);
+        let scheme = match (fbo, fbs, rfbs) {
+            (true, true, _) => "FBO+FBS",
+            (true, false, true) => "FBO+rFBS",
+            (true, false, false) => "FBO",
+            (false, true, _) => "FBS",
+            (false, false, true) => "rFBS",
+            _ => "",
+        };
+        let offer_id = product_info
+            .and_then(|info| info["offer_id"].as_str().map(String::from))
+            .or_else(|| p["offer_id"].as_str().map(String::from))
+            .unwrap_or_default();
+        not_delivered.push(serde_json::json!({
+            "sku": p["product_id"].as_i64().unwrap_or(0),
+            "name": product_name,
+            "offer_id": offer_id,
+            "product_id": pid,
+            "has_fbo_stocks": p["has_fbo_stocks"].as_bool().unwrap_or(false),
+            "has_fbs_stocks": p["has_fbs_stocks"].as_bool().unwrap_or(false),
+            "archived": p["archived"].as_bool().unwrap_or(false),
+            "product_info": match product_info {
+                Some(info) => {
+                    let stocks_arr = info["stocks"]["stocks"].as_array().map(|a| a.as_slice()).unwrap_or(&[]);
+                    let stocks_present: i64 = stocks_arr.iter().filter_map(|s| s["present"].as_i64()).sum();
+                    let stocks_reserved: i64 = stocks_arr.iter().filter_map(|s| s["reserved"].as_i64()).sum();
+                    let commissions: Vec<Value> = info["commissions"].as_array()
+                        .map(|arr| arr.iter().map(|c| serde_json::json!({
+                            "sale_schema": c["sale_schema"].as_str().unwrap_or(""),
+                            "percent": c["percent"].as_f64().unwrap_or(0.0),
+                            "delivery_amount": c["delivery_amount"].as_f64().unwrap_or(0.0),
+                            "return_amount": c["return_amount"].as_f64().unwrap_or(0.0),
+                            "value": c["value"].as_f64().unwrap_or(0.0),
+                        })).collect())
+                        .unwrap_or_default();
+                    serde_json::json!({
+                        "name": info["name"].as_str().unwrap_or(""),
+                        "offer_id": info["offer_id"].as_str().unwrap_or(""),
+                        "price": info["price"].as_str().unwrap_or("0").parse::<f64>().unwrap_or(0.0),
+                        "old_price": info["old_price"].as_str().unwrap_or("0").parse::<f64>().unwrap_or(0.0),
+                        "min_price": info["min_price"].as_str().unwrap_or("0").parse::<f64>().unwrap_or(0.0),
+                        "stocks_present": stocks_present,
+                        "stocks_reserved": stocks_reserved,
+                        "color_index": info["price_indexes"]["color_index"].as_str().unwrap_or(""),
+                        "commissions": commissions,
+                        "volume_weight": info["volume_weight"].as_f64().unwrap_or(0.0),
+                        "is_archived": info["is_archived"].as_bool().unwrap_or(false),
+                        "is_super": info["is_super"].as_bool().unwrap_or(false),
+                        "status": info["statuses"]["status"].as_str().unwrap_or(""),
+                        "net_price": product_prices.map_or(0.0, |pp| pp["price"]["net_price"].as_f64().unwrap_or(0.0)),
+                        "scheme": scheme,
+                        "primary_image": info["primary_image"].as_array()
+                            .and_then(|arr| arr.first())
+                            .and_then(|s| s.as_str())
+                            .unwrap_or("")
+                            .to_string(),
+                    })
+                },
+                None => serde_json::json!(null),
+            },
+        }));
+    }
+    not_delivered.sort_by(|a, b| a["name"].as_str().unwrap_or("").cmp(b["name"].as_str().unwrap_or("")));
+
     Ok(serde_json::json!({
         "month": month,
         "year": year,
@@ -497,5 +587,6 @@ pub async fn build_dashboard_summary(
             "details": account_level_expenses.details,
         },
         "products": tree,
+        "not_delivered": not_delivered,
     }))
 }
