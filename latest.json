@@ -1,19 +1,19 @@
 {
-  "version": "1.0.13",
-  "notes": "https://github.com/Nikjee/ozon-seller-dashboard/releases/tag/v1.0.13",
-  "pub_date": "2026-06-19T16:12:15Z",
+  "version": "1.0.14",
+  "notes": "https://github.com/Nikjee/ozon-seller-dashboard/releases/tag/v1.0.14",
+  "pub_date": "2026-06-19T18:28:03Z",
   "platforms": {
     "linux-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYVFGOEFuUFZySVdxNmlNbk1IakVuZ1o2c25CSWpZUGtCYTFwaElzR2MwZE1QZ0k5YVN2Q2lkWHJEOVl2dHNXMXB6OWNQUW9JOUdMeWFvdXM3QStBRXdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxODg1NDM5CWZpbGU6b3pvbi1kYXNoYm9hcmRfMS4wLjEzX2FtZDY0LkFwcEltYWdlCno2eVVOOUx6R255SVdVZktkZHd5eHZxT1doczFSZTU0bjZVTUVldEc4TnBEbkJwSDc5dG1ZeXhoS0ZiSDNPUWIzbGlTSTg0N0F1QUVnM0EvaGRUTERRPT0K",
-      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452312434"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYVRYMlo5SjVCRzBqZXRGUC9PUjVFSGgzTUZQRWxpcHZxeTQ2RUU1ZDNGME5sakVVWWV0b0MyK2JQTGRBZ2hiejBYd3dCS0l5c0FLRzg4SUR5c2YxTndzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxODkzNTMzCWZpbGU6b3pvbi1kYXNoYm9hcmRfMS4wLjE0X2FtZDY0LkFwcEltYWdlCkZZU3p1d2tBYUk0Z3hCYmhrYXlxUUNuNElPNVBvNDRKc2hZM0crbGRsSmxuR3EzSDRmMzVWMjJMWmRrUFM1QkN6b29Ba1BPTUlJL0JtZlFwQU9PcENnPT0K",
+      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452396126"
     },
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYVh3eG01MzJsOFN5aWhOaERCTjZRZHNEbzlrWCszelUwV2lHSGJrazNHYnh1dXhIZ1l6RUxadkQ5Vm50SUo5UEdHTTdvUHpDWnRRRmkwYjJ0UnVxUlFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxODg1MzEyCWZpbGU6b3pvbi1kYXNoYm9hcmQuYXBwLnRhci5negowSno4YjR1QWlPOXFrNHhscVZUS1JoZjF0NGUyeFFvTVlrdjlJaXkzTVdCUGU4M3dnZnBma2tlc1J6RkVRMkVDVWNEK1FteFZqS0ZBOFhmWEVGWHFEZz09Cg==",
-      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452312433"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYVNHTUhoUGhyUFNpUkJWeVkraEQ1dDdGdzViZ1kwL0lkU1lFb0IyMzZlUXJTWW9aKzBZUllmMkxrRzl6MTA5b2pSU1ZrSDlHVkV1MldCWHRvdkVCUkFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxODkzMzMwCWZpbGU6b3pvbi1kYXNoYm9hcmQuYXBwLnRhci5nego1Tkl3ekhmNHlMQmFPbW5mdzlJZDJZb085SWtaRktFWlZlTkRwa0pMVkxpR3NNRkZXZno0ZlBDL0tQeXV4cUhJaUJERFhrSmEweU9MU2xQdjBsWjZEQT09Cg==",
+      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452396132"
     },
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYWVYeWx6eGw5SGRNbjZCYWlVTGVib2V4MFJlZ3JTbEFtdkdod1JTTnBqQlljRkNGNlZ3bGJvSHkrdXkxRmlpQS96NFhmUFhHUXhRdWUvandtQURsQ3dZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxODg1NTA1CWZpbGU6b3pvbi1kYXNoYm9hcmRfMS4wLjEzX3g2NC1zZXR1cC5leGUKZXU3Zk5xNThEcjloRXBYNGxFWEQyQlFaVUsrOWs4ZUdCb1R0VHB2V25Ib1ZqazVDQ2NJeTNQSnpzSDVSd2JQcE9OSy8xdXhNZFNUT1dIMlVRczJyQlE9PQo=",
-      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452312440"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYWFmWWU2OE8vS0YzR2xzRERpL3NxVnhoQ3NCUklQUkp2TlZheHBIeU0wYVJhYm4xNTl2WDN0L2pKU2I2VWpLTHhIaW9JZTg0Tzc4a1cxTVFYYTc4eEF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxODkzNjQyCWZpbGU6b3pvbi1kYXNoYm9hcmRfMS4wLjE0X3g2NC1zZXR1cC5leGUKSG9iUnVnVnZYV1BSMXYrU2pUWkNHZXZRenVqaFphcndRdUo0ZkhtcTYwdjBHMDlzRjl1T3lXZDBoYjhmcFdMYlkxTjduT1J3a0ZpL24xOGtuN01VQVE9PQo=",
+      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452396125"
     }
   }
 }
