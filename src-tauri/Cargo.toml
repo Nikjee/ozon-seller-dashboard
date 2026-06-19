@@ -1,6 +1,6 @@
 [package]
 name = "ozon-dashboard"
-version = "1.0.0"
+version = "1.0.13"
 description = "Ozon Seller Dashboard"
 authors = ["you"]
 license = ""
