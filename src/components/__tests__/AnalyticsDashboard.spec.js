@@ -16,7 +16,10 @@ vi.mock('naive-ui', () => ({
   NStatistic: { name: 'NStatistic', props: ['label', 'value', 'type'], template: '<div class="n-statistic" :data-type="type"><span class="label">{{ label }}</span><span class="value">{{ value }}</span></div>' },
   NTag: { name: 'NTag', props: ['type'], template: '<span class="n-tag" :data-type="type"><slot /></span>' },
   NDataTable: { name: 'NDataTable', props: ['columns', 'data'], template: '<div class="n-data-table"><div v-for="row in data" :key="row.sku || row.name" class="n-data-row">{{ row.name }} {{ row.sku }} {{ row.current_stock }} {{ row.turnover_grade }} {{ row.days_without_sales }}</div></div>' },
-  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' }
+  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' },
+  NPopover: { name: 'NPopover', props: ['show', 'placement', 'trigger'], template: '<div class="n-popover" v-if="show"><slot /></div>' },
+  NCheckbox: { name: 'NCheckbox', props: ['checked'], template: '<span class="n-checkbox" :data-checked="String(checked)"><slot /></span>' },
+  NSpace: { name: 'NSpace', props: ['vertical', 'size'], template: '<div class="n-space"><slot /></div>' }
 }))
 
 beforeEach(() => {
@@ -31,7 +34,10 @@ const createStubs = () => ({
   NStatistic: { name: 'NStatistic', props: ['label', 'value', 'type'], template: '<div class="n-statistic" :data-type="type"><span class="label">{{ label }}</span><span class="value">{{ value }}</span></div>' },
   NTag: { name: 'NTag', props: ['type'], template: '<span class="n-tag" :data-type="type"><slot /></span>' },
   NDataTable: { name: 'NDataTable', props: ['columns', 'data'], template: '<div class="n-data-table"><div v-for="row in data" :key="row.sku || row.name" class="n-data-row">{{ row.name }} {{ row.sku }} {{ row.current_stock }} {{ row.turnover_grade }} {{ row.days_without_sales }}</div></div>' },
-  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' }
+  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' },
+  NPopover: { name: 'NPopover', props: ['show', 'placement', 'trigger'], template: '<div class="n-popover" v-if="show"><slot /></div>' },
+  NCheckbox: { name: 'NCheckbox', props: ['checked'], template: '<span class="n-checkbox" :data-checked="String(checked)"><slot /></span>' },
+  NSpace: { name: 'NSpace', props: ['vertical', 'size'], template: '<div class="n-space"><slot /></div>' }
 })
 
 describe('AnalyticsDashboard.vue', () => {

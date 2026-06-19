@@ -40,10 +40,22 @@ async fn ozon_request(
         req = req.json(b);
     }
 
-    let res = req
+    let mut res = req
         .send()
         .await
         .map_err(|e| format!("Ozon API request failed: {}", e))?;
+    if res.status() == 429 {
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        let mut retry = match method {
+            "GET" => client.get(&url),
+            _ => client.post(&url),
+        };
+        retry = retry.headers(build_headers(config));
+        if let Some(b) = body {
+            retry = retry.json(b);
+        }
+        res = retry.send().await.map_err(|e| format!("Ozon API request failed: {}", e))?;
+    }
     if !res.status().is_success() {
         let status = res.status();
         let body = res.text().await.unwrap_or_default();
@@ -156,12 +168,14 @@ pub async fn get_finance_transactions(
     let mut page = 1;
     let mut all_operations: Vec<Value> = Vec::new();
 
+    let from_iso = format!("{}T00:00:00.000Z", date_from);
+    let to_iso = format!("{}T23:59:59.999Z", date_to);
     loop {
         let body = serde_json::json!({
             "filter": {
                 "date": {
-                    "from": date_from,
-                    "to": date_to,
+                    "from": &from_iso,
+                    "to": &to_iso,
                 }
             },
             "page": page,

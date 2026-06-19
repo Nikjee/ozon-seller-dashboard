@@ -28,16 +28,13 @@ pub struct Posting {
 
 fn month_date_range(month: u32, year: i32) -> (String, String) {
     let padded = format!("{:02}", month);
-    let from = format!("{}-{}-01T00:00:00.000Z", year, padded);
+    let from = format!("{}-{}-01", year, padded);
     let last_day = NaiveDate::from_ymd_opt(year, month + 1, 1)
         .unwrap_or(NaiveDate::from_ymd_opt(year, month, 28).unwrap())
         .pred_opt()
         .unwrap()
         .day();
-    let to = format!(
-        "{}-{}-{:02}T23:59:59.999Z",
-        year, padded, last_day
-    );
+    let to = format!("{}-{}-{:02}", year, padded, last_day);
     (from, to)
 }
 

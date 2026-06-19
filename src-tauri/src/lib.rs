@@ -182,6 +182,39 @@ async fn get_turnover_data(
 }
 
 #[tauri::command]
+async fn get_finance_detailed(
+    date_from: String,
+    date_to: String,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] get_finance_detailed date_from={} date_to={}", date_from, date_to);
+
+    // Get aggregate totals
+    let totals = get_finance_totals(date_from.clone(), date_to.clone(), state.clone()).await?;
+
+    // Get all transactions and categorize
+    let transactions_raw = ozon::get_finance_transactions(&cfg, &date_from, &date_to).await?;
+    let operations = transactions_raw["result"]["operations"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+
+    let expenses = expenses::build_all_expenses(&operations);
+
+    let total_expenses: f64 = expenses.cats.values().sum();
+
+    Ok(serde_json::json!({
+        "totals": totals,
+        "expenses": {
+            "categories": expenses.cats,
+            "details": expenses.details,
+            "total": total_expenses,
+        }
+    }))
+}
+
+#[tauri::command]
 async fn get_analytics_dashboard_data(
     state: State<'_, AppState>,
 ) -> Result<Value, String> {
@@ -199,7 +232,7 @@ async fn get_analytics_dashboard_data(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .manage(AppState {
             config: Mutex::new(None),
         })
@@ -215,11 +248,18 @@ pub fn run() {
             get_stock_report,
             get_stock_analytics,
             get_turnover_data,
+            get_finance_detailed,
             get_analytics_dashboard_data,
         ])
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_process::init())
-        .setup(|app| {
+        .plugin(tauri_plugin_process::init());
+
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+    }
+
+    builder.setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()

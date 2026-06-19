@@ -142,6 +142,54 @@ pub fn build_expense_categories(operations: &[Value], sku: i64) -> ExpenseCatego
     }
 }
 
+/// Categorize ALL operations (both account-level and product-level) by expense type.
+/// Unlike build_account_level_expenses, does NOT skip operations that have items.
+pub fn build_all_expenses(operations: &[Value]) -> ExpenseCategories {
+    let skipped = skip_types();
+    let mut cats: HashMap<ExpenseCategory, f64> = HashMap::new();
+    let mut details: HashMap<ExpenseCategory, Vec<ExpenseDetail>> = HashMap::new();
+
+    for op in operations {
+        let op_type = op["operation_type"].as_str().unwrap_or("");
+        if skipped.contains(op_type) {
+            continue;
+        }
+
+        let amount = (op["amount"].as_f64().unwrap_or(0.0)).abs();
+        if amount == 0.0 {
+            continue;
+        }
+
+        let cat = categorize_expense(op["operation_type_name"].as_str().unwrap_or(""));
+        *cats.entry(cat.clone()).or_insert(0.0) += amount;
+        details.entry(cat.clone()).or_default().push(ExpenseDetail {
+            name: op["operation_type_name"].as_str().unwrap_or("—").to_string(),
+            date: op["operation_date"].as_str().unwrap_or("").to_string(),
+            amount,
+            operation_id: op["operation_id"].clone(),
+        });
+    }
+
+    ExpenseCategories {
+        cats: ExpenseCategory::all_variants()
+            .into_iter()
+            .map(|c| {
+                let label = serde_json::to_string(&c).unwrap().trim_matches('"').to_string();
+                let val = cats.get(&c).copied().unwrap_or(0.0);
+                (label, val)
+            })
+            .collect(),
+        details: ExpenseCategory::all_variants()
+            .into_iter()
+            .map(|c| {
+                let label = serde_json::to_string(&c).unwrap().trim_matches('"').to_string();
+                let dets = details.get(&c).cloned().unwrap_or_default();
+                (label, dets)
+            })
+            .collect(),
+    }
+}
+
 pub fn build_account_level_expenses(operations: &[Value]) -> ExpenseCategories {
     let skipped = skip_types();
     let mut cats: HashMap<ExpenseCategory, f64> = HashMap::new();

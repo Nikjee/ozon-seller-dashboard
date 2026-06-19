@@ -73,7 +73,9 @@ function commissionBadgeRender() {
       const scheme = (c.sale_schema || '').toLowerCase()
       const type = schemeTypeMap[scheme] || 'default'
       const label = (c.sale_schema || '').toUpperCase()
-      const popoverText = t('commission.popover').replace('{scheme}', label).replace('{pct}', c.percent)
+      const delivery = formatRubCompact(c.delivery_amount || 0)
+      const ret = formatRubCompact(c.return_amount || 0)
+      const popoverText = t('commission.popover').replace('{scheme}', label).replace('{pct}', c.percent).replace('{delivery}', delivery).replace('{return}', ret)
       return h(NPopover, {}, {
         trigger: () => h(NTag, { type, size: 'small' }, () => label),
         default: () => popoverText
@@ -150,6 +152,7 @@ const columns = computed(() => [
   { title: t('table.offerId'), key: 'offer_id', width: 120, ellipsis: { tooltip: true }, ...R, sorter: (a, b) => (Number(a.offer_id) || 0) - (Number(b.offer_id) || 0) },
   { title: t('table.sku'), key: 'sku', width: 100, ...R },
   { title: t('table.price'), key: 'product_info.price', width: 100, ...R, sorter: sortBy('product_info.price'), render: numRenderFor('product_info.price') },
+  { title: t('table.minPrice'), key: 'product_info.min_price', width: 90, ...R, sorter: sortBy('product_info.min_price'), render: numRenderFor('product_info.min_price') },
   { title: t('table.oldPrice'), key: 'product_info.old_price', width: 100, ...R, sorter: sortBy('product_info.old_price'), render: numRenderFor('product_info.old_price') },
   { title: t('table.netPrice'), key: 'product_info.net_price', width: 100, ...R, sorter: sortBy('product_info.net_price'), render: numRenderFor('product_info.net_price') },
   { title: t('table.stocksPresent'), key: 'product_info.stocks_present', width: 90, ...R, sorter: sortBy('product_info.stocks_present'), render: plainNumRenderFor('product_info.stocks_present') },

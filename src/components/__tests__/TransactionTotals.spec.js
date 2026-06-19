@@ -14,7 +14,9 @@ vi.mock('naive-ui', () => ({
   NButton: { name: 'NButton', emits: ['click'], template: '<button class="n-button" @click="$emit(\'click\')"><slot /></button>' },
   NCard: { name: 'NCard', template: '<div class="n-card"><slot /></div>' },
   NStatistic: { name: 'NStatistic', props: ['label', 'value', 'type'], template: '<div class="n-statistic" :data-type="type"><span class="label">{{ label }}</span><span class="value">{{ value }}</span></div>' },
-  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' }
+  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' },
+  NDataTable: { name: 'NDataTable', props: ['columns', 'data', 'bordered', 'singleLine', 'size', 'maxHeight'], template: '<div class="n-data-table"><div v-for="row in data" :key="row.name" class="n-data-row">{{ row.name }} {{ row.amount }}</div></div>' },
+  NModal: { name: 'NModal', props: ['show', 'title'], template: '<div class="n-modal" v-if="show"><slot /></div>' }
 }))
 
 beforeEach(() => {
@@ -27,7 +29,9 @@ const createStubs = () => ({
   NButton: { name: 'NButton', emits: ['click'], template: '<button class="n-button" @click="$emit(\'click\')"><slot /></button>' },
   NCard: { name: 'NCard', template: '<div class="n-card"><slot /></div>' },
   NStatistic: { name: 'NStatistic', props: ['label', 'value', 'type'], template: '<div class="n-statistic" :data-type="type"><span class="label">{{ label }}</span><span class="value">{{ value }}</span></div>' },
-  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' }
+  NEmpty: { name: 'NEmpty', props: ['description'], template: '<div class="n-empty">{{ description }}</div>' },
+  NDataTable: { name: 'NDataTable', props: ['columns', 'data', 'bordered', 'singleLine', 'size', 'maxHeight'], template: '<div class="n-data-table"><div v-for="row in data" :key="row.name" class="n-data-row">{{ row.name }} {{ row.amount }}</div></div>' },
+  NModal: { name: 'NModal', props: ['show', 'title'], template: '<div class="n-modal" v-if="show"><slot /></div>' }
 })
 
 describe('TransactionTotals.vue', () => {
@@ -38,6 +42,7 @@ describe('TransactionTotals.vue', () => {
       month: ref(1),
       year: ref(2026),
       data: ref({ accrualsForSale: 100, saleCommission: -20, processingAndDelivery: 10, servicesAmount: 5, othersAmount: 3, refundsAndCancellations: -7, totalCompensation: 15, moneyTransfer: 106 }),
+      expenses: ref({ categories: { ad: 100 }, details: { ad: [{ name: 'Test', date: '2026-01-15', amount: 100 }] }, total: 100 }),
       loading: ref(false),
       error: ref(null),
       accrualsForSale: ref(100),
@@ -79,6 +84,7 @@ describe('TransactionTotals.vue', () => {
       month: ref(1),
       year: ref(2026),
       data: ref(null),
+      expenses: ref(null),
       loading: ref(true),
       error: ref(null),
       accrualsForSale: ref(0),
@@ -100,6 +106,7 @@ describe('TransactionTotals.vue', () => {
       month: ref(1),
       year: ref(2026),
       data: ref(null),
+      expenses: ref(null),
       loading: ref(false),
       error: ref('Finance totals failed'),
       accrualsForSale: ref(0),
@@ -123,6 +130,7 @@ describe('TransactionTotals.vue', () => {
       month: ref(1),
       year: ref(2026),
       data: ref(null),
+      expenses: ref(null),
       loading: ref(false),
       error: ref(null),
       accrualsForSale: ref(0),

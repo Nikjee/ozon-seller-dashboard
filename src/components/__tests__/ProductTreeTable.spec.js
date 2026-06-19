@@ -12,7 +12,11 @@ vi.mock('naive-ui', () => ({
     props: ['columns', 'data', 'rowKey', 'expandedRowKeys', 'size', 'scrollX', 'bordered', 'singleLine'],
     emits: ['update:expandedRowKeys'],
     template: '<div class="n-data-table" :data-row-count="data && data.length"><div v-if="columns && columns.length" class="n-data-columns">{{ columns.map(c => c.title).join(",") }}</div><div v-for="row in data" :key="rowKey ? rowKey(row) : row.sku" class="n-data-row">{{ row.name }} {{ row.sku }}</div></div>'
-  }
+  },
+  NPopover: { name: 'NPopover', props: ['show', 'placement', 'trigger'], template: '<div class="n-popover" v-if="show"><slot /></div>' },
+  NCheckbox: { name: 'NCheckbox', props: ['checked'], template: '<span class="n-checkbox" :data-checked="String(checked)"><slot /></span>' },
+  NSpace: { name: 'NSpace', props: ['vertical', 'size'], template: '<div class="n-space"><slot /></div>' },
+  NTag: { name: 'NTag', props: ['type', 'size'], template: '<span class="n-tag"><slot /></span>' }
 }))
 
 beforeEach(() => {
