@@ -16,7 +16,9 @@ vi.mock('naive-ui', () => ({
   NPopover: { name: 'NPopover', props: ['show', 'placement', 'trigger'], template: '<div class="n-popover" v-if="show"><slot /></div>' },
   NCheckbox: { name: 'NCheckbox', props: ['checked'], template: '<span class="n-checkbox" :data-checked="String(checked)"><slot /></span>' },
   NSpace: { name: 'NSpace', props: ['vertical', 'size'], template: '<div class="n-space"><slot /></div>' },
-  NTag: { name: 'NTag', props: ['type', 'size'], template: '<span class="n-tag"><slot /></span>' }
+  NTag: { name: 'NTag', props: ['type', 'size'], template: '<span class="n-tag"><slot /></span>' },
+  NTabs: { name: 'NTabs', props: ['value'], template: '<div class="n-tabs"><slot /></div>' },
+  NTabPane: { name: 'NTabPane', props: ['name', 'tab'], template: '<div class="n-tab-pane" :data-name="name"><slot /></div>' }
 }))
 
 beforeEach(() => {
