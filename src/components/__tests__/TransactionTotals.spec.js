@@ -59,8 +59,16 @@ describe('TransactionTotals.vue', () => {
     expect(wrapper.text()).toContain('100')
     expect(wrapper.text()).toContain('106')
     const stats = wrapper.findAll('.n-statistic')
-    expect(stats.find((node) => node.text().includes('totals.saleCommission') && node.text().includes('-20'))?.attributes('data-type')).toBe('error')
-    expect(stats.find((node) => node.text().includes('totals.moneyTransfer') && node.text().includes('106'))?.attributes('data-type')).toBeUndefined()
+
+    // saleCommission is negative → check formatted output uses − sign
+    const saleNode = stats.find((node) => node.text().includes('totals.saleCommission') && node.text().includes('20'))
+    expect(saleNode).toBeTruthy()
+    expect(saleNode?.attributes('data-type')).toBe('error')
+
+    // moneyTransfer is positive → no error type
+    const transferNode = stats.find((node) => node.text().includes('totals.moneyTransfer') && node.text().includes('106'))
+    expect(transferNode).toBeTruthy()
+    expect(transferNode?.attributes('data-type')).toBeUndefined()
   })
 
   it('renders loading, error, and empty states', async () => {

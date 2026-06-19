@@ -17,6 +17,8 @@ export function useDashboard() {
         month: month.value,
         year: year.value
       })
+      console.log("PRODUCTS", data.value);
+
     } catch (e) {
       error.value = typeof e === 'string' ? e : (e.message || 'Unknown error')
       data.value = null

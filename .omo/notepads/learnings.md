@@ -1,0 +1,1 @@
+- Created TransactionTotals.vue using Naive UI components (NCard, NStatistic, NSpin, NAlert, NEmpty) and mapped 8 metric cards to the useTransactionTotals composable.

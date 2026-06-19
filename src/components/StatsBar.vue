@@ -1,6 +1,6 @@
 <script setup>
 import { useI18n } from '../composables/useI18n.js'
-import { formatRub } from '../utils.js'
+import { formatRub, formatInt } from '../utils.js'
 
 defineProps({ totals: Object, accountExpenses: Object })
 const { t } = useI18n()
@@ -10,8 +10,8 @@ const { t } = useI18n()
 <div v-if="totals" class="stats-grid">
     <div class="stat-card">
       <div class="stat-card__label">{{ t('productsSold') }}</div>
-      <div class="stat-card__value">{{ totals.total_quantity }}</div>
-      <div class="stat-card__sub">{{ totals.product_count }} {{ t('positions') }}</div>
+      <div class="stat-card__value">{{ formatInt(totals.total_quantity) }}</div>
+      <div class="stat-card__sub">{{ formatInt(totals.product_count) }} {{ t('positions') }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-card__label">{{ t('revenue') }}</div>

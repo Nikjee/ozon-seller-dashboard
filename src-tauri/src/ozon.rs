@@ -70,58 +70,81 @@ pub async fn get_products(
     ozon_request(config, "/v3/product/list", "POST", Some(&body)).await
 }
 
+/// Fetch rich product data for a batch of product IDs via /v3/product/info/list.
+/// API limit: max 1000 product_ids per request. We batch in chunks of 1000.
+pub async fn get_product_info_list(
+    config: &OzonConfig,
+    product_ids: &[i64],
+) -> Result<Vec<Value>, String> {
+    let mut all_items: Vec<Value> = Vec::new();
+
+    for chunk in product_ids.chunks(1000) {
+        let body = serde_json::json!({
+            "product_id": chunk,
+        });
+        let response = ozon_request(config, "/v3/product/info/list", "POST", Some(&body)).await?;
+        if let Some(items) = response["items"].as_array() {
+            all_items.extend(items.clone());
+        }
+    }
+
+    Ok(all_items)
+}
+
+/// Fetch pricing info (cost price, commission %) for a batch of product IDs via /v5/product/info/prices.
+/// API limit: max 1000 product_ids per request. Uses cursor pagination.
+pub async fn get_product_info_prices(
+    config: &OzonConfig,
+    product_ids: &[i64],
+) -> Result<Vec<Value>, String> {
+    let mut all_items: Vec<Value> = Vec::new();
+
+    for chunk in product_ids.chunks(1000) {
+        let mut cursor = String::new();
+        loop {
+            let body = serde_json::json!({
+                "filter": { "product_id": chunk },
+                "limit": 1000,
+                "cursor": cursor,
+            });
+            let response = ozon_request(config, "/v5/product/info/prices", "POST", Some(&body)).await?;
+            if let Some(items) = response["items"].as_array() {
+                all_items.extend(items.clone());
+            }
+            cursor = response["cursor"].as_str().unwrap_or("").to_string();
+            if cursor.is_empty() {
+                break;
+            }
+        }
+    }
+
+    Ok(all_items)
+}
+
 pub async fn get_realization_report(
     config: &OzonConfig,
     month: u32,
     year: i32,
 ) -> Result<Option<Value>, String> {
-    let client = reqwest::Client::new();
-    let url = format!(
-        "{}/v1/finance/realization/posting",
-        BASE_URL
-    );
-    let headers = build_headers(config);
-
     let body = serde_json::json!({ "month": month, "year": year });
-
-    let res = client
-        .post(&url)
-        .headers(headers)
+    let res = reqwest::Client::new()
+        .post(&format!("{}/v1/finance/realization/posting", BASE_URL))
+        .headers(build_headers(config))
         .json(&body)
         .send()
         .await
         .map_err(|e| format!("Ozon API request failed: {}", e))?;
 
     let status = res.status();
-
-    if status == reqwest::StatusCode::NOT_FOUND {
-        let err: Value = res
-            .json()
-            .await
-            .unwrap_or(serde_json::json!({}));
-        if let Some(msg) = err["message"].as_str() {
-            if msg.contains("Report was not found") {
-                return Ok(None);
-            }
-        }
-        return Err(format!(
-            "Ozon API /v1/finance/realization/posting returned {} (not found)",
-            status
-        ));
-    }
-
     if !status.is_success() {
-        let body = res.text().await.unwrap_or_default();
-        return Err(format!(
-            "Ozon API /v1/finance/realization/posting returned {}: {}",
-            status, body
-        ));
+        let text = res.text().await.unwrap_or_default();
+        if status == reqwest::StatusCode::NOT_FOUND && text.contains("Report was not found") {
+            return Ok(None);
+        }
+        return Err(format!("Ozon API /v1/finance/realization/posting returned {}: {}", status, text));
     }
 
-    res.json()
-        .await
-        .map(Some)
-        .map_err(|e| format!("Ozon API deserialize failed: {}", e))
+    res.json().await.map(Some).map_err(|e| format!("Ozon API deserialize failed: {}", e))
 }
 
 pub async fn get_finance_transactions(
@@ -267,15 +290,3 @@ pub async fn get_finance_totals(
     ozon_request(config, "/v3/finance/transaction/totals", "POST", Some(&body)).await
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_pagination_break_condition() {
-        let page_size = 1000;
-        let ops_len = 500; // less than page_size → should break
-        assert!(ops_len < page_size);
-
-        let ops_len = 1000; // equal to page_size → should continue
-        assert!(ops_len >= page_size);
-    }
-}

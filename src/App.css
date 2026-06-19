@@ -420,7 +420,7 @@
 
 .product-row__children-header {
   display: grid;
-  grid-template-columns: 1fr 110px 120px 120px 120px 120px 120px;
+  grid-template-columns: 1fr 110px 120px 120px 120px 120px 120px 120px 120px;
   gap: 8px;
   padding: 10px 0 6px;
 }
@@ -441,7 +441,7 @@
 /* ─── Posting Row ─── */
 .posting-row {
   display: grid;
-  grid-template-columns: 1fr 110px 120px 120px 120px 120px 120px;
+  grid-template-columns: 1fr 110px 120px 120px 120px 120px 120px 120px 120px;
   gap: 8px;
   align-items: center;
   padding: 10px 0;
@@ -903,6 +903,44 @@
   margin: 0.25rem 0 0;
   color: var(--text-color-2);
   font-size: 0.9rem;
+}
+
+/* ─── View info collapsible panel ─── */
+.view-info {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.view-info[open] {
+  padding-bottom: 4px;
+}
+
+.view-info summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  user-select: none;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.view-info summary:hover {
+  opacity: 1;
+}
+
+.view-info[open] summary {
+  opacity: 1;
+  margin-bottom: 8px;
+}
+
+.view-info p {
+  margin: 0 0 6px;
+  line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .view-content {

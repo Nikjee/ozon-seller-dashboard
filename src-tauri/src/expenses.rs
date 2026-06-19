@@ -60,11 +60,14 @@ fn categorize_expense(type_name: &str) -> ExpenseCategory {
     ExpenseCategory::Other
 }
 
-fn skip_types() -> HashSet<String> {
-    ["OperationAgentDeliveredToCustomer", "OperationItemReturn"]
-        .iter()
-        .map(|s| s.to_string())
-        .collect()
+fn skip_types() -> &'static HashSet<String> {
+    static SKIP: std::sync::LazyLock<HashSet<String>> = std::sync::LazyLock::new(|| {
+        ["OperationAgentDeliveredToCustomer", "OperationItemReturn"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect()
+    });
+    &SKIP
 }
 
 #[derive(Debug, Clone, Serialize)]

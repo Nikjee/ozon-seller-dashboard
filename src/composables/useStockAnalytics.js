@@ -1,10 +1,7 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 
 export function useStockAnalytics() {
-  const month = ref(new Date().getMonth() + 1)
-  const year = ref(new Date().getFullYear())
-
   const data = ref(null)
   const loading = ref(false)
   const error = ref(null)
@@ -33,13 +30,7 @@ export function useStockAnalytics() {
   const totalFreeToSell = computed(() => data.value?.total_free_to_sell || 0)
   const totalReserved = computed(() => data.value?.total_reserved || 0)
 
-  watch([month, year], () => {
-    load()
-  }, { immediate: false })
-
   return {
-    month,
-    year,
     data,
     loading,
     error,

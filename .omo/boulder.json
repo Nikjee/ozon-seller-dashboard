@@ -1,0 +1,134 @@
+{
+  "schema_version": 2,
+  "active_work_id": "dashboard-fixes-20f89607",
+  "works": {
+    "enhancements-v2-576510d1": {
+      "work_id": "enhancements-v2-576510d1",
+      "active_plan": "/home/nikjee/test_projects/agent-skills/ozon-dashboard/.omo/plans/enhancements-v2.md",
+      "plan_name": "enhancements-v2",
+      "status": "completed",
+      "started_at": "2026-06-16T13:58:46.194Z",
+      "updated_at": "2026-06-16T14:22:17.710Z",
+      "session_ids": [
+        "opencode:ses_12f5d4d98ffey6SWITyQ0L8DHC"
+      ],
+      "session_origins": {
+        "opencode:ses_12f5d4d98ffey6SWITyQ0L8DHC": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "Add `get_product_info_stocks` to `src-tauri/src/ozon.rs` — cursor-paginated call to `/v4/product/info/stocks`",
+          "session_id": "opencode:ses_12f4105a0ffeSF3viSLA7ee7F1",
+          "agent": "Sisyphus-Junior",
+          "category": "deep",
+          "started_at": "2026-06-16T13:59:47.311Z",
+          "ended_at": "2026-06-16T14:06:45.049Z",
+          "elapsed_ms": 417738,
+          "status": "completed",
+          "updated_at": "2026-06-16T14:06:45.049Z"
+        },
+        "todo:5": {
+          "task_key": "todo:5",
+          "task_label": "5",
+          "task_title": "Register new Tauri command + update `lib.rs`",
+          "session_id": "opencode:ses_12f3d8678ffeCQfZaRxXh30h8n",
+          "agent": "Sisyphus-Junior",
+          "category": "visual-engineering",
+          "started_at": "2026-06-16T14:07:41.501Z",
+          "status": "completed",
+          "updated_at": "2026-06-16T14:09:46.622Z",
+          "ended_at": "2026-06-16T14:09:46.622Z",
+          "elapsed_ms": 125121
+        },
+        "todo:6": {
+          "task_key": "todo:6",
+          "task_label": "6",
+          "task_title": "Full Rust compilation check",
+          "session_id": "opencode:ses_12f34573fffeXdDOM4SJHuJgFV",
+          "agent": "Sisyphus-Junior",
+          "category": "visual-engineering",
+          "started_at": "2026-06-16T14:10:46.257Z",
+          "status": "completed",
+          "updated_at": "2026-06-16T14:18:52.624Z",
+          "ended_at": "2026-06-16T14:18:52.624Z",
+          "elapsed_ms": 486367
+        },
+        "final-wave:f1": {
+          "task_key": "final-wave:f1",
+          "task_label": "F1",
+          "task_title": "**Plan Compliance Audit** — `oracle`",
+          "session_id": "opencode:ses_12f3302d6ffeFToqWAsGXMbWCz",
+          "agent": "Sisyphus-Junior",
+          "category": "unspecified-high",
+          "updated_at": "2026-06-16T14:22:01.558Z",
+          "started_at": "2026-06-16T14:21:14.256Z",
+          "status": "completed",
+          "ended_at": "2026-06-16T14:22:01.558Z",
+          "elapsed_ms": 47302
+        }
+      },
+      "ended_at": "2026-06-16T14:22:17.710Z",
+      "elapsed_ms": 1411516
+    },
+    "dashboard-fixes-20f89607": {
+      "work_id": "dashboard-fixes-20f89607",
+      "active_plan": "/home/nikjee/test_projects/agent-skills/ozon-dashboard/.omo/plans/dashboard-fixes.md",
+      "plan_name": "dashboard-fixes",
+      "status": "completed",
+      "started_at": "2026-06-16T15:20:01.950Z",
+      "updated_at": "2026-06-16T15:56:34.720Z",
+      "session_ids": [
+        "opencode:ses_12f18a61cffejs88bdvWhmYcb8"
+      ],
+      "session_origins": {
+        "opencode:ses_12f18a61cffejs88bdvWhmYcb8": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "Fix `numRender` falsey check in ProductTreeTable.vue",
+          "session_id": "opencode:ses_12eea43c8ffe8uw2t0605MTSIN",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "started_at": "2026-06-16T15:32:59.359Z",
+          "status": "running",
+          "updated_at": "2026-06-16T15:44:12.353Z"
+        }
+      },
+      "ended_at": "2026-06-16T15:56:34.720Z",
+      "elapsed_ms": 2192770
+    }
+  },
+  "active_plan": "/home/nikjee/test_projects/agent-skills/ozon-dashboard/.omo/plans/dashboard-fixes.md",
+  "started_at": "2026-06-16T15:20:01.950Z",
+  "status": "completed",
+  "updated_at": "2026-06-16T15:56:34.720Z",
+  "session_ids": [
+    "opencode:ses_12f18a61cffejs88bdvWhmYcb8"
+  ],
+  "session_origins": {
+    "opencode:ses_12f18a61cffejs88bdvWhmYcb8": "direct"
+  },
+  "plan_name": "dashboard-fixes",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Fix `numRender` falsey check in ProductTreeTable.vue",
+      "session_id": "opencode:ses_12eea43c8ffe8uw2t0605MTSIN",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "started_at": "2026-06-16T15:32:59.359Z",
+      "status": "running",
+      "updated_at": "2026-06-16T15:44:12.353Z"
+    }
+  },
+  "agent": "atlas",
+  "ended_at": "2026-06-16T15:56:34.720Z",
+  "elapsed_ms": 2192770
+}

@@ -25,23 +25,28 @@ pub fn extract_product_costs(operations: &[Value], sku: i64) -> Value {
             .to_lowercase();
         let op_type = op["operation_type"].as_str().unwrap_or("").to_lowercase();
 
-        // Extract based on keyword matching (follows expenses.rs pattern)
+        let mut matched = false;
+
         if op_type_name.contains("комисс") || op_type == "sale_commission" {
             *costs.entry("commission".to_string()).or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("эквайринг") || op_type == "acquiring" {
             *costs.entry("acquiring".to_string()).or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("обработк") && op_type_name.contains("отправлен") {
             *costs
                 .entry("order_processing".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("логистик")
             || op_type_name.contains("кросс-док")
             || op_type_name.contains("crossdoc")
         {
             *costs.entry("logistics".to_string()).or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("доставк")
             && (op_type_name.contains("выдач") || op_type_name.contains("pickup"))
@@ -49,72 +54,90 @@ pub fn extract_product_costs(operations: &[Value], sku: i64) -> Value {
             *costs
                 .entry("delivery_to_pickup".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("размещ") || op_type_name.contains("хранени") {
             *costs.entry("placement".to_string()).or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("обработк") && op_type_name.contains("возврат") {
             *costs
                 .entry("return_processing".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("обратн") && op_type_name.contains("логистик") {
             *costs
                 .entry("return_logistics".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("утилиз") {
             *costs.entry("disposal".to_string()).or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("овх") || op_type_name.contains("дополнитель") {
             *costs
                 .entry("ovh_processing".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("операцион") && op_type_name.contains("ошибк") {
             *costs
                 .entry("operational_errors".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("клик") || op_type_name.contains("click") {
             *costs
                 .entry("pay_per_click".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("заказ") || op_type.contains("per_order") {
             *costs
                 .entry("pay_per_order".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("звёзд") || op_type_name.contains("star") {
             *costs
                 .entry("star_products".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("бренд") || op_type_name.contains("brand") {
             *costs
                 .entry("paid_brand".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("отзыв") || op_type_name.contains("review") {
             *costs
                 .entry("reviews_cost".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("балл") || op_type_name.contains("discount") {
             *costs
                 .entry("discount_points".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("партнёр") || op_type_name.contains("partner") {
             *costs
                 .entry("partner_programs".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
         }
         if op_type_name.contains("компенсац") || op_type.contains("compensation") {
             *costs
                 .entry("compensation".to_string())
                 .or_insert(0.0) += amount;
+            matched = true;
+        }
+        if !matched {
+            *costs.entry("other_services".to_string()).or_insert(0.0) += amount;
         }
     }
 
@@ -241,6 +264,19 @@ mod tests {
         for val in obj.values() {
             assert_eq!(val.as_f64().unwrap(), 0.0);
         }
+    }
+
+    #[test]
+    fn test_other_services_catches_unmatched() {
+        let ops = vec![json!({
+            "amount": -75.00,
+            "operation_type_name": "Какая-то неизвестная услуга",
+            "operation_type": "unknown_service_type",
+            "items": [{"sku": 12345, "name": "Test Product"}]
+        })];
+        let result = extract_product_costs(&ops, 12345);
+        assert_eq!(result["other_services"].as_f64().unwrap(), 75.0);
+        assert_eq!(result["commission"].as_f64().unwrap(), 0.0);
     }
 
     #[test]

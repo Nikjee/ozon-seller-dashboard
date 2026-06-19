@@ -18,4 +18,9 @@ function formatRubCompact(value) {
   return `${sign}${formatted} ₽`
 }
 
-export { formatRub, formatRubCompact }
+function formatInt(value) {
+  if (value === undefined || value === null) return '—'
+  return Number(value).toLocaleString('ru-RU')
+}
+
+export { formatRub, formatRubCompact, formatInt }

@@ -173,12 +173,3 @@ pub async fn get_analytics_dashboard_data(config: &OzonConfig) -> Result<Value, 
     }))
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_get_stock_report_rejects_empty_config() {
-        // Unit test verifying function signature — actual API calls not made
-        // This tests that the module compiles and public functions have correct signatures
-        assert!(true);
-    }
-}

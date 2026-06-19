@@ -1,0 +1,11 @@
+Task 1: Naive UI install + theme integration
+
+Commands:
+- npm install naive-ui
+- npm install -D unplugin-auto-import unplugin-vue-components
+- npm run build
+
+Result:
+- Dependencies installed successfully.
+- Vite build succeeded.
+- Build output: 2806 modules transformed, production bundle generated in dist/.

@@ -115,6 +115,8 @@ function formatCost(val) {
           <span class="product-row__children-h product-row__children-h--amount">{{ t('commission') }}</span>
           <span class="product-row__children-h product-row__children-h--amount">{{ t('delivery') }}</span>
           <span class="product-row__children-h product-row__children-h--amount">{{ t('returns') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('table.payPerClick') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('table.payPerOrder') }}</span>
           <span class="product-row__children-h product-row__children-h--net">{{ t('net') }}</span>
         </div>
         <PostingRow
@@ -147,6 +149,8 @@ function formatCost(val) {
           <span class="product-row__children-h product-row__children-h--amount">{{ t('commission') }}</span>
           <span class="product-row__children-h product-row__children-h--amount">{{ t('delivery') }}</span>
           <span class="product-row__children-h product-row__children-h--amount">{{ t('returns') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('table.payPerClick') }}</span>
+          <span class="product-row__children-h product-row__children-h--amount">{{ t('table.payPerOrder') }}</span>
           <span class="product-row__children-h product-row__children-h--net">{{ t('enriched.net') }}</span>
         </div>
         <PostingRow v-for="p in postings" :key="p.posting_number" :posting="p" />

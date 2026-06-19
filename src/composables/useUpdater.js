@@ -4,7 +4,6 @@ import { invoke } from '@tauri-apps/api/core'
 export function useUpdater() {
   const checking = ref(false)
   const updateVersion = ref(null)
-  const downloadProgress = ref(0)
   const downloading = ref(false)
   const error = ref(null)
 
@@ -62,11 +61,7 @@ export function useUpdater() {
       })
       if (update) {
         // API asset download endpoint needs application/octet-stream
-        await update.downloadAndInstall((event) => {
-          if (event.progress) {
-            downloadProgress.value = event.progress
-          }
-        }, { headers: { ...token, Accept: 'application/octet-stream' } })
+        await update.downloadAndInstall(undefined, { headers: { ...token, Accept: 'application/octet-stream' } })
         await relaunch()
       }
     } catch (e) {
@@ -79,7 +74,6 @@ export function useUpdater() {
   return {
     checking,
     updateVersion,
-    downloadProgress,
     downloading,
     error,
     checkForUpdates,

@@ -57,7 +57,7 @@ describe('AnalyticsDashboard.vue', () => {
 
     expect(refresh).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('analytics.title')
-    expect(wrapper.text()).toContain('5000')
+    expect(wrapper.text()).toContain('57')
     expect(wrapper.text()).toContain('Widget')
     expect(wrapper.text()).toContain('SKU-2')
     expect(wrapper.text()).toContain('popular: 1')

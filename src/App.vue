@@ -109,6 +109,10 @@ async function handleSaveConfig() {
           <div class="view-container">
             <div class="view-header">
               <h2>{{ t('tabs.dashboard') }}</h2>
+              <details class="view-info">
+                <summary>{{ t('info.dashboard') }}</summary>
+                <p>{{ t('info.dashboardContent') }}</p>
+              </details>
             </div>
             <div class="view-content">
               <LoadingOverlay v-if="loading" />
@@ -118,7 +122,7 @@ async function handleSaveConfig() {
               <template v-else-if="totals">
                 <StatsBar :totals="totals" :account-expenses="accountExpenses" />
                 <AccountExpensesPanel :account-expenses="accountExpenses" />
-                <ProductTreeTable :products="products" enriched />
+                <ProductTreeTable :products="products" />
               </template>
               <EmptyState v-else />
             </div>
