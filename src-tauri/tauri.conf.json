@@ -47,7 +47,6 @@
       "icons/icon.ico"
     ],
     "macOS": {
-      "signingIdentity": "-"
     }
   }
 }
