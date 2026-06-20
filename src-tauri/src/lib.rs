@@ -3,6 +3,7 @@ mod config;
 mod dashboard;
 mod expenses;
 mod ozon;
+mod supply;
 mod uniteconomy;
 
 use log::info;

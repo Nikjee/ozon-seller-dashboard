@@ -3,7 +3,7 @@ use serde_json::Value;
 
 const BASE_URL: &str = "https://api-seller.ozon.ru";
 
-fn build_headers(config: &OzonConfig) -> reqwest::header::HeaderMap {
+pub(crate) fn build_headers(config: &OzonConfig) -> reqwest::header::HeaderMap {
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert(
         "Client-Id",
@@ -20,7 +20,7 @@ fn build_headers(config: &OzonConfig) -> reqwest::header::HeaderMap {
     headers
 }
 
-async fn ozon_request(
+pub(crate) async fn ozon_request(
     config: &OzonConfig,
     path: &str,
     method: &str,
