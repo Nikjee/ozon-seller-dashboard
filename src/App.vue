@@ -15,6 +15,7 @@ import AccountExpensesPanel from "./components/AccountExpensesPanel.vue"
 import StockAnalytics from './components/StockAnalytics.vue'
 import TransactionTotals from './components/TransactionTotals.vue'
 import AnalyticsDashboard from './components/AnalyticsDashboard.vue'
+import PostingConstructor from './components/PostingConstructor.vue'
 import "./App.css"
 
 const { theme, toggle: toggleTheme } = useTheme()
@@ -32,11 +33,13 @@ const activeView = ref('dashboard')
 const stocksActivated = ref(false)
 const totalsActivated = ref(false)
 const analyticsActivated = ref(false)
+const postingActivated = ref(false)
 
 watch(activeView, (view) => {
   if (view === 'stocks') stocksActivated.value = true
   if (view === 'totals') totalsActivated.value = true
   if (view === 'analytics') analyticsActivated.value = true
+  if (view === 'posting-constructor') postingActivated.value = true
 })
 
 onMounted(async () => {
@@ -125,6 +128,9 @@ async function handleSaveConfig() {
         </n-tab-pane>
         <n-tab-pane name="analytics" :tab="t('tabs.analytics')">
           <AnalyticsDashboard v-if="analyticsActivated" />
+        </n-tab-pane>
+        <n-tab-pane name="posting-constructor" :tab="t('postingConstructor.title')">
+          <PostingConstructor v-if="postingActivated" />
         </n-tab-pane>
       </n-tabs>
     </main>
