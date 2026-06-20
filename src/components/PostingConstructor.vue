@@ -50,6 +50,11 @@ const totalProductQuantity = computed(() =>
   products.value.reduce((sum, p) => sum + (p.quantity || 0), 0)
 )
 
+const availableProducts = computed(() => {
+  const selectedSkus = new Set(products.value.map(p => p.sku))
+  return productSearchResults.value.filter(p => !selectedSkus.has(p.sku))
+})
+
 onMounted(() => {
   loadWarehouses()
 })
@@ -135,6 +140,7 @@ function handleCreateAnother() {
                   class="selection-card"
                   :class="{ 'selection-card--selected': selectedWarehouseId === w.warehouse_id }"
                   @click="selectedWarehouseId = w.warehouse_id"
+                  :title="w.name"
                 >
                   <div class="selection-card__title">{{ w.name }}</div>
                 </div>
@@ -173,6 +179,7 @@ function handleCreateAnother() {
                   class="selection-card"
                   :class="{ 'selection-card--selected': selectedClusterId === c.cluster_id }"
                   @click="selectedClusterId = c.cluster_id"
+                  :title="c.name"
                 >
                   <div class="selection-card__title">{{ c.name }}</div>
                 </div>
@@ -203,9 +210,9 @@ function handleCreateAnother() {
               clearable
               style="margin-bottom: 12px;"
             />
-            <div v-if="productSearchResults.length" class="product-search-results">
+            <div v-if="availableProducts.length" class="product-search-results">
               <div
-                v-for="p in productSearchResults"
+                v-for="p in availableProducts"
                 :key="p.sku"
                 class="product-search-item"
               >
@@ -215,7 +222,7 @@ function handleCreateAnother() {
                 </n-button>
               </div>
             </div>
-            <n-empty v-else :description="t('postingConstructor.noProducts')" />
+            <n-empty v-if="!availableProducts.length && !loading" :description="t('postingConstructor.noProducts')" />
 
             <div v-if="products.length" class="added-products">
               <h4>{{ t('postingConstructor.totalItems') }}: {{ totalProductQuantity }}</h4>
@@ -482,5 +489,8 @@ function handleCreateAnother() {
 .selection-card__title {
   font-weight: 600;
   color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
