@@ -4,7 +4,22 @@ use serde_json::Value;
 
 /// Get list of available warehouses for supply.
 pub async fn get_available_warehouses(config: &OzonConfig) -> Result<Value, String> {
-    ozon::ozon_request(config, "/v1/supplier/available_warehouses", "POST", None).await
+    let raw = ozon::ozon_request(config, "/v1/supplier/available_warehouses", "GET", None).await?;
+    let mut warehouses = Vec::new();
+    if let Some(result) = raw["result"].as_array() {
+        for item in result {
+            if let Some(wh) = item["warehouse"].as_object() {
+                let id_str = wh["id"].as_str().unwrap_or("0");
+                let id: i64 = id_str.parse().unwrap_or(0);
+                let name = wh["name"].as_str().unwrap_or("");
+                warehouses.push(serde_json::json!({
+                    "warehouse_id": id,
+                    "name": name,
+                }));
+            }
+        }
+    }
+    Ok(serde_json::json!(warehouses))
 }
 
 /// Get list of Ozon clusters.
@@ -13,7 +28,19 @@ pub async fn get_cluster_list(config: &OzonConfig) -> Result<Value, String> {
         "cluster_ids": [],
         "cluster_type": "CLUSTER_TYPE_OZON",
     });
-    ozon::ozon_request(config, "/v1/cluster/list", "POST", Some(&body)).await
+    let raw = ozon::ozon_request(config, "/v1/cluster/list", "POST", Some(&body)).await?;
+    let mut clusters = Vec::new();
+    if let Some(items) = raw["clusters"].as_array() {
+        for item in items {
+            let id = item["id"].as_i64().unwrap_or(0);
+            let name = item["name"].as_str().unwrap_or("");
+            clusters.push(serde_json::json!({
+                "cluster_id": id,
+                "name": name,
+            }));
+        }
+    }
+    Ok(serde_json::json!(clusters))
 }
 
 /// Create a supply draft with items, cluster, and optional drop-off warehouse.
@@ -86,8 +113,38 @@ pub async fn get_supply_create_status(
     ozon::ozon_request(config, "/v1/draft/supply/create/status", "POST", Some(&body)).await
 }
 
-/// List products (reuses get_products, wraps result).
+/// List products enriched with name and sku from product info.
 pub async fn list_products(config: &OzonConfig) -> Result<Value, String> {
     let (items, total) = crate::ozon::get_products(config, 1000).await?;
-    Ok(serde_json::json!({ "products": items, "total": total }))
+
+    // Extract product IDs for enrichment
+    let product_ids: Vec<i64> = items.iter()
+        .filter_map(|item| item["product_id"].as_i64())
+        .collect();
+
+    if product_ids.is_empty() {
+        return Ok(serde_json::json!({ "products": [], "total": 0 }));
+    }
+
+    // Get enriched product info (name, sku, etc.)
+    let enriched = crate::ozon::get_product_info_list(config, &product_ids).await?;
+
+    // Build merged response with only needed fields
+    let mut merged: Vec<Value> = Vec::new();
+    for item in &enriched {
+        let sku = item["sources"]
+            .as_array()
+            .and_then(|s| s.first())
+            .and_then(|s| s["sku"].as_i64())
+            .unwrap_or(0);
+
+        merged.push(serde_json::json!({
+            "id": item["id"],
+            "offer_id": item["offer_id"],
+            "name": item["name"],
+            "sku": sku,
+        }));
+    }
+
+    Ok(serde_json::json!({ "products": merged, "total": total }))
 }
