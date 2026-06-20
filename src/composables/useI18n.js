@@ -212,7 +212,17 @@ const messages = {
     'postingConstructor.step7': 'Результат',
     'postingConstructor.supplyCreated': 'Заявка создана',
     'postingConstructor.title': 'Заявки на поставку',
-    'postingConstructor.warehouse': 'Склад'
+    'postingConstructor.warehouse': 'Склад',
+    'postingConstructor.createAnother': 'Создать ещё',
+    'postingConstructor.loadTimeslots': 'Загрузить интервалы',
+    'postingConstructor.noWarehouses': 'Нет доступных складов',
+    'postingConstructor.noClusters': 'Нет доступных кластеров',
+    'postingConstructor.noProducts': 'Товары не найдены',
+    'postingConstructor.noTimeslots': 'Нет доступных интервалов',
+    'postingConstructor.summary': 'Сводка',
+    'postingConstructor.totalItems': 'Всего товаров',
+    'postingConstructor.dateRange': 'Диапазон дат',
+    'postingConstructor.supplyOrderIds': 'Номера заявок'
   },
   en: {
     'info.dashboard': 'About this view',
@@ -421,7 +431,17 @@ const messages = {
     'postingConstructor.step7': 'Result',
     'postingConstructor.supplyCreated': 'Supply request created',
     'postingConstructor.title': 'Supply Requests',
-    'postingConstructor.warehouse': 'Warehouse'
+    'postingConstructor.warehouse': 'Warehouse',
+    'postingConstructor.createAnother': 'Create Another',
+    'postingConstructor.loadTimeslots': 'Load Timeslots',
+    'postingConstructor.noWarehouses': 'No warehouses available',
+    'postingConstructor.noClusters': 'No clusters available',
+    'postingConstructor.noProducts': 'No products found',
+    'postingConstructor.noTimeslots': 'No timeslots available',
+    'postingConstructor.summary': 'Summary',
+    'postingConstructor.totalItems': 'Total items',
+    'postingConstructor.dateRange': 'Date Range',
+    'postingConstructor.supplyOrderIds': 'Supply Order IDs'
   }
 }
 
