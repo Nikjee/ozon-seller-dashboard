@@ -384,23 +384,23 @@ function handleCreateAnother() {
 
 .step-content h3 {
   margin-bottom: 12px;
-  color: var(--ctp-text);
+  color: var(--text);
 }
 
 .step-content h4 {
   margin: 16px 0 8px;
-  color: var(--ctp-subtext1);
+  color: var(--text);
 }
 
 .step-hint {
-  color: var(--ctp-subtext0);
+  color: var(--text-subtle);
   font-size: 0.9em;
 }
 
 .product-search-results {
   max-height: 240px;
   overflow-y: auto;
-  border: 1px solid var(--ctp-surface1);
+  border: 1px solid var(--border);
   border-radius: 6px;
   margin-bottom: 12px;
 }
@@ -410,7 +410,7 @@ function handleCreateAnother() {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--ctp-surface1);
+  border-bottom: 1px solid var(--border);
 }
 
 .product-search-item:last-child {
@@ -426,12 +426,12 @@ function handleCreateAnother() {
   align-items: center;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--ctp-surface1);
+  border-bottom: 1px solid var(--border);
 }
 
 .added-product-name {
   flex: 1;
-  color: var(--ctp-text);
+  color: var(--text);
 }
 
 .timeslot-controls {
@@ -447,7 +447,7 @@ function handleCreateAnother() {
   justify-content: space-between;
   align-items: center;
   padding-top: 16px;
-  border-top: 1px solid var(--ctp-surface1);
+  border-top: 1px solid var(--border);
   margin-top: 16px;
 }
 
@@ -462,7 +462,7 @@ function handleCreateAnother() {
 }
 
 .selection-card {
-  border: 1px solid var(--ctp-surface1);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 16px;
   cursor: pointer;
@@ -471,16 +471,16 @@ function handleCreateAnother() {
 
 .selection-card:hover {
   border-color: var(--ctp-blue);
-  background: var(--ctp-mantle);
+  background: var(--bg-surface);
 }
 
 .selection-card--selected {
   border-color: var(--ctp-blue);
-  background: var(--ctp-surface0);
+  background: var(--bg-overlay);
 }
 
 .selection-card__title {
   font-weight: 600;
-  color: var(--ctp-text);
+  color: var(--text);
 }
 </style>
