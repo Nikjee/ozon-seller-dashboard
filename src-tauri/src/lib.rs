@@ -241,6 +241,133 @@ async fn get_fbo_totals(
     ozon::get_fbo_posting_totals(&cfg, month, year).await
 }
 
+#[tauri::command]
+async fn get_available_warehouses(
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] get_available_warehouses invoked");
+    let result = supply::get_available_warehouses(&cfg).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_available_warehouses OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_available_warehouses FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn get_cluster_list(
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] get_cluster_list invoked");
+    let result = supply::get_cluster_list(&cfg).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_cluster_list OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_cluster_list FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn create_supply_draft(
+    cluster_ids: Vec<i64>,
+    items: String,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    let items_vec: Vec<Value> = serde_json::from_str(&items).map_err(|e| e.to_string())?;
+    info!("[CMD] create_supply_draft invoked cluster_ids={:?} items_count={}", cluster_ids, items_vec.len());
+    let result = supply::create_supply_draft(&cfg, cluster_ids, items_vec, None, "CREATE_TYPE_DIRECT".to_string()).await;
+    match &result {
+        Ok(v) => info!("[CMD] create_supply_draft OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] create_supply_draft FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn get_draft_info(
+    operation_id: String,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] get_draft_info invoked operation_id={}", operation_id);
+    let result = supply::get_draft_info(&cfg, &operation_id).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_draft_info OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_draft_info FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn get_timeslots(
+    draft_id: i64,
+    warehouse_ids: Vec<i64>,
+    date_from: String,
+    date_to: String,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] get_timeslots invoked draft_id={} warehouse_ids={:?}", draft_id, warehouse_ids);
+    let result = supply::get_timeslots(&cfg, draft_id, warehouse_ids, &date_from, &date_to).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_timeslots OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_timeslots FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn create_supply_from_draft(
+    draft_id: i64,
+    warehouse_id: i64,
+    timeslot_from: String,
+    timeslot_to: String,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] create_supply_from_draft invoked draft_id={} warehouse_id={}", draft_id, warehouse_id);
+    let result = supply::create_supply_from_draft(&cfg, draft_id, warehouse_id, &timeslot_from, &timeslot_to).await;
+    match &result {
+        Ok(v) => info!("[CMD] create_supply_from_draft OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] create_supply_from_draft FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn get_supply_create_status(
+    operation_id: String,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] get_supply_create_status invoked operation_id={}", operation_id);
+    let result = supply::get_supply_create_status(&cfg, &operation_id).await;
+    match &result {
+        Ok(v) => info!("[CMD] get_supply_create_status OK: keys={:?}", v.as_object().map(|o| o.keys().collect::<Vec<_>>())),
+        Err(e) => info!("[CMD] get_supply_create_status FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn list_products(
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    let cfg = get_config(&state)?;
+    info!("[CMD] list_products invoked");
+    let result = supply::list_products(&cfg).await;
+    match &result {
+        Ok(v) => info!("[CMD] list_products OK: products={} total={}", 
+            v["products"].as_array().map(|a| a.len()).unwrap_or(0),
+            v["total"]),
+        Err(e) => info!("[CMD] list_products FAIL: {}", e),
+    }
+    result.map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
@@ -262,6 +389,14 @@ pub fn run() {
             get_finance_detailed,
             get_analytics_dashboard_data,
             get_fbo_totals,
+            get_available_warehouses,
+            get_cluster_list,
+            create_supply_draft,
+            get_draft_info,
+            get_timeslots,
+            create_supply_from_draft,
+            get_supply_create_status,
+            list_products,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init());
