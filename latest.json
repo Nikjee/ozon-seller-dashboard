@@ -1,11 +1,11 @@
 {
-  "version": "1.0.16",
-  "notes": "https://github.com/Nikjee/ozon-seller-dashboard/releases/tag/v1.0.16",
-  "pub_date": "2026-06-19T23:25:55Z",
+  "version": "1.0.18",
+  "notes": "https://github.com/Nikjee/ozon-seller-dashboard/releases/tag/v1.0.18",
+  "pub_date": "2026-06-20T00:12:46Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYVNpaVM1L3FHM1krMkI3S3VHcFlISDJYai9QZmFubXFZYlhEbG1Ca2dRSXFxWit6RlhuV1grUmRmOGRmV09SektudHhlWFgrVUtMaDBLdE0yREJHVEFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxOTExMjAxCWZpbGU6b3pvbi1kYXNoYm9hcmQuYXBwLnRhci5negpSU0cvZTZyRS9tUU1pZ25EK25wTXdPN3NaWXhmc3N5TjlkV0VWamozQXQrVWpOdjd3RVByc1RlZ0NSN09NcGl0US9ab1hYSm40ZmhETis3ZTNTYU9Edz09Cg==",
-      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452561272"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSRTdqaVZrTWtBYVU0TXFUa1N0Qy9TRWhQU09YT0JRV2tuWXZGVW5HQmVNRGJNQjRwUG82V3ZBRzhWVTViK2s5UlU1eWpuMm51VWR6NGltWVU1U1ZWVSt6bnNNVWNkL0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxOTE0MDYzCWZpbGU6b3pvbi1kYXNoYm9hcmQuYXBwLnRhci5negpTTVJzNTR1SmViS1lZd2lqQVVtbVJzalBKSTIySXJaRElOR3BRRlErc2VwR0oxTDc2N1orRW00bXVpWnM1emRYZmRFcnJqZVcxYzAzZkd2bEp3bE9BZz09Cg==",
+      "url": "https://api.github.com/repos/Nikjee/ozon-seller-dashboard/releases/assets/452593052"
     }
   }
 }
