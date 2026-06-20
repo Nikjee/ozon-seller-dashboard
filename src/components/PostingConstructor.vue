@@ -11,7 +11,8 @@ const { t } = useI18n()
 const {
   currentStep, goToStep,
   warehouses, selectedWarehouseId, loadWarehouses,
-  clusters, selectedClusterIds, loadClusters,
+  clusters, selectedClusterId, loadClusters,
+  warehouseSearchQuery, clusterSearchQuery,
   allProducts, productSearchQuery, products, productSearchResults,
   loadProducts, addProduct, removeProduct,
   draftId, submitDraft,
@@ -28,9 +29,21 @@ const selectedWarehouseName = computed(() => {
 })
 
 const selectedClusterName = computed(() => {
-  if (!selectedClusterIds.value.length) return ''
-  const c = clusters.value.find(c => c.cluster_id === selectedClusterIds.value[0])
+  if (!selectedClusterId.value) return ''
+  const c = clusters.value.find(c => c.cluster_id === selectedClusterId.value)
   return c ? (c.name || `ID: ${c.cluster_id}`) : ''
+})
+
+const filteredWarehouses = computed(() => {
+  const q = warehouseSearchQuery.value.toLowerCase().trim()
+  if (!q) return warehouses.value
+  return warehouses.value.filter(w => w.name && w.name.toLowerCase().includes(q))
+})
+
+const filteredClusters = computed(() => {
+  const q = clusterSearchQuery.value.toLowerCase().trim()
+  if (!q) return clusters.value
+  return clusters.value.filter(c => c.name && c.name.toLowerCase().includes(q))
 })
 
 const totalProductQuantity = computed(() =>
@@ -108,16 +121,25 @@ function handleCreateAnother() {
             </n-button>
           </template>
           <template v-else-if="warehouses.length">
-            <n-radio-group v-model:value="selectedWarehouseId" vertical>
-              <n-radio
-                v-for="w in warehouses"
-                :key="w.warehouse_id"
-                :value="w.warehouse_id"
-                style="margin-bottom: 8px;"
-              >
-                {{ w.name }} <span v-if="w.address" class="step-hint">— {{ w.address }}</span>
-              </n-radio>
-            </n-radio-group>
+            <div class="selection-container">
+              <n-input
+                v-model:value="warehouseSearchQuery"
+                :placeholder="t('postingConstructor.searchWarehouses')"
+                clearable
+                style="margin-bottom: 12px;"
+              />
+              <div class="selection-grid">
+                <div
+                  v-for="w in filteredWarehouses"
+                  :key="w.warehouse_id"
+                  class="selection-card"
+                  :class="{ 'selection-card--selected': selectedWarehouseId === w.warehouse_id }"
+                  @click="selectedWarehouseId = w.warehouse_id"
+                >
+                  <div class="selection-card__title">{{ w.name }}</div>
+                </div>
+              </div>
+            </div>
           </template>
           <n-empty v-else :description="t('postingConstructor.noWarehouses')" />
         </n-spin>
@@ -137,16 +159,25 @@ function handleCreateAnother() {
             </n-button>
           </template>
           <template v-else-if="clusters.length">
-            <n-radio-group v-model:value="selectedClusterIds" vertical>
-              <n-radio
-                v-for="c in clusters"
-                :key="c.cluster_id"
-                :value="c.cluster_id"
-                style="margin-bottom: 8px;"
-              >
-                {{ c.name }}
-              </n-radio>
-            </n-radio-group>
+            <div class="selection-container">
+              <n-input
+                v-model:value="clusterSearchQuery"
+                :placeholder="t('postingConstructor.searchClusters')"
+                clearable
+                style="margin-bottom: 12px;"
+              />
+              <div class="selection-grid">
+                <div
+                  v-for="c in filteredClusters"
+                  :key="c.cluster_id"
+                  class="selection-card"
+                  :class="{ 'selection-card--selected': selectedClusterId === c.cluster_id }"
+                  @click="selectedClusterId = c.cluster_id"
+                >
+                  <div class="selection-card__title">{{ c.name }}</div>
+                </div>
+              </div>
+            </div>
           </template>
           <n-empty v-else :description="t('postingConstructor.noClusters')" />
         </n-spin>
@@ -332,7 +363,7 @@ function handleCreateAnother() {
           v-if="currentStep < 6"
           type="primary"
           :disabled="(currentStep === 1 && !selectedWarehouseId) ||
-                     (currentStep === 2 && !selectedClusterIds.length) ||
+                     (currentStep === 2 && !selectedClusterId) ||
                      (currentStep === 3 && !products.length) ||
                      (currentStep === 4 && !draftId) ||
                      (currentStep === 5 && !selectedTimeslot)"
@@ -418,5 +449,38 @@ function handleCreateAnother() {
   padding-top: 16px;
   border-top: 1px solid var(--ctp-surface1);
   margin-top: 16px;
+}
+
+.selection-container {
+  margin-bottom: 16px;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.selection-card {
+  border: 1px solid var(--ctp-surface1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.selection-card:hover {
+  border-color: var(--ctp-blue);
+  background: var(--ctp-mantle);
+}
+
+.selection-card--selected {
+  border-color: var(--ctp-blue);
+  background: var(--ctp-surface0);
+}
+
+.selection-card__title {
+  font-weight: 600;
+  color: var(--ctp-text);
 }
 </style>

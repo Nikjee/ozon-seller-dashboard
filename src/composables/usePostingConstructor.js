@@ -27,7 +27,9 @@ const INITIAL_STATE = {
   warehouses: [],
   selectedWarehouseId: null,
   clusters: [],
-  selectedClusterIds: [],
+  selectedClusterId: null,
+  warehouseSearchQuery: '',
+  clusterSearchQuery: '',
   allProducts: [],
   productSearchQuery: '',
   products: [],
@@ -52,7 +54,11 @@ export function usePostingConstructor() {
 
   // ── Step 2: Clusters ──
   const clusters = ref(INITIAL_STATE.clusters)
-  const selectedClusterIds = ref(INITIAL_STATE.selectedClusterIds)
+  const selectedClusterId = ref(INITIAL_STATE.selectedClusterId)
+
+  // ── Search queries ──
+  const warehouseSearchQuery = ref(INITIAL_STATE.warehouseSearchQuery)
+  const clusterSearchQuery = ref(INITIAL_STATE.clusterSearchQuery)
 
   // ── Step 3: Products ──
   const allProducts = ref(INITIAL_STATE.allProducts)
@@ -152,7 +158,7 @@ export function usePostingConstructor() {
         products.value.map((p) => ({ sku: p.sku, quantity: p.quantity }))
       )
       const result = await invoke('create_supply_draft', {
-        clusterIds: selectedClusterIds.value,
+        clusterIds: [selectedClusterId.value],
         items,
       })
       draftOperationId.value = result?.operation_id ?? null
@@ -254,7 +260,9 @@ export function usePostingConstructor() {
     warehouses.value = INITIAL_STATE.warehouses
     selectedWarehouseId.value = INITIAL_STATE.selectedWarehouseId
     clusters.value = INITIAL_STATE.clusters
-    selectedClusterIds.value = INITIAL_STATE.selectedClusterIds
+    selectedClusterId.value = INITIAL_STATE.selectedClusterId
+    warehouseSearchQuery.value = INITIAL_STATE.warehouseSearchQuery
+    clusterSearchQuery.value = INITIAL_STATE.clusterSearchQuery
     allProducts.value = INITIAL_STATE.allProducts
     productSearchQuery.value = INITIAL_STATE.productSearchQuery
     products.value = INITIAL_STATE.products
@@ -279,8 +287,11 @@ export function usePostingConstructor() {
     loadWarehouses,
     // step 2
     clusters,
-    selectedClusterIds,
+    selectedClusterId,
     loadClusters,
+    // search queries
+    warehouseSearchQuery,
+    clusterSearchQuery,
     // step 3
     allProducts,
     productSearchQuery,

@@ -222,7 +222,9 @@ const messages = {
     'postingConstructor.summary': 'Сводка',
     'postingConstructor.totalItems': 'Всего товаров',
     'postingConstructor.dateRange': 'Диапазон дат',
-    'postingConstructor.supplyOrderIds': 'Номера заявок'
+    'postingConstructor.supplyOrderIds': 'Номера заявок',
+'postingConstructor.searchWarehouses': 'Поиск складов...',
+'postingConstructor.searchClusters': 'Поиск кластеров...',
   },
   en: {
     'info.dashboard': 'About this view',
@@ -441,7 +443,9 @@ const messages = {
     'postingConstructor.summary': 'Summary',
     'postingConstructor.totalItems': 'Total items',
     'postingConstructor.dateRange': 'Date Range',
-    'postingConstructor.supplyOrderIds': 'Supply Order IDs'
+    'postingConstructor.supplyOrderIds': 'Supply Order IDs',
+'postingConstructor.searchWarehouses': 'Search warehouses...',
+'postingConstructor.searchClusters': 'Search clusters...',
   }
 }
 
