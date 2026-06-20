@@ -22,7 +22,7 @@ pub async fn get_available_warehouses(config: &OzonConfig) -> Result<Value, Stri
     Ok(serde_json::json!(warehouses))
 }
 
-/// Get list of Ozon clusters.
+/// Get list of Ozon clusters with their warehouses.
 pub async fn get_cluster_list(config: &OzonConfig) -> Result<Value, String> {
     let body = serde_json::json!({
         "cluster_ids": [],
@@ -34,9 +34,27 @@ pub async fn get_cluster_list(config: &OzonConfig) -> Result<Value, String> {
         for item in items {
             let id = item["id"].as_i64().unwrap_or(0);
             let name = item["name"].as_str().unwrap_or("");
+
+            // Flatten warehouses from all logistic_clusters
+            let mut warehouses = Vec::new();
+            if let Some(logistic_clusters) = item["logistic_clusters"].as_array() {
+                for lc in logistic_clusters {
+                    if let Some(whs) = lc["warehouses"].as_array() {
+                        for wh in whs {
+                            warehouses.push(serde_json::json!({
+                                "warehouse_id": wh["warehouse_id"],
+                                "name": wh["name"],
+                                "type": wh["type"],
+                            }));
+                        }
+                    }
+                }
+            }
+
             clusters.push(serde_json::json!({
                 "cluster_id": id,
                 "name": name,
+                "warehouses": warehouses,
             }));
         }
     }

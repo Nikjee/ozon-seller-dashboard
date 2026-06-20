@@ -24,11 +24,8 @@ function pollStatus(invokeFn, checkSuccess, checkFailed, maxRetries = 30) {
 
 const INITIAL_STATE = {
   currentStep: 1,
-  warehouses: [],
-  selectedWarehouseId: null,
   clusters: [],
   selectedClusterId: null,
-  warehouseSearchQuery: '',
   clusterSearchQuery: '',
   allProducts: [],
   productSearchQuery: '',
@@ -48,16 +45,11 @@ export function usePostingConstructor() {
   // ── Step state ──
   const currentStep = ref(INITIAL_STATE.currentStep)
 
-  // ── Step 1: Warehouse ──
-  const warehouses = ref(INITIAL_STATE.warehouses)
-  const selectedWarehouseId = ref(INITIAL_STATE.selectedWarehouseId)
-
-  // ── Step 2: Clusters ──
+  // ── Step 1: Clusters ──
   const clusters = ref(INITIAL_STATE.clusters)
   const selectedClusterId = ref(INITIAL_STATE.selectedClusterId)
 
   // ── Search queries ──
-  const warehouseSearchQuery = ref(INITIAL_STATE.warehouseSearchQuery)
   const clusterSearchQuery = ref(INITIAL_STATE.clusterSearchQuery)
 
   // ── Step 3: Products ──
@@ -98,21 +90,7 @@ export function usePostingConstructor() {
     currentStep.value = n
   }
 
-  // ── Step 1: Load warehouses ──
-  async function loadWarehouses() {
-    loading.value = true
-    error.value = null
-    try {
-      warehouses.value = await invoke('get_available_warehouses')
-    } catch (e) {
-      error.value = typeof e === 'string' ? e : (e.message || 'Unknown error')
-      warehouses.value = []
-    } finally {
-      loading.value = false
-    }
-  }
-
-  // ── Step 2: Load clusters ──
+  // ── Step 1: Load clusters (includes warehouses) ──
   async function loadClusters() {
     loading.value = true
     error.value = null
@@ -191,11 +169,11 @@ export function usePostingConstructor() {
   }
 
   // ── Step 6: Load timeslots ──
-  async function loadTimeslots(dateFrom, dateTo) {
+  async function loadTimeslots(warehouseId, dateFrom, dateTo) {
     loading.value = true
     error.value = null
     try {
-      const warehouseIds = selectedWarehouseId.value ? [selectedWarehouseId.value] : []
+      const warehouseIds = warehouseId ? [warehouseId] : []
       timeslots.value = await invoke('get_timeslots', {
         draftId: draftId.value,
         warehouseIds,
@@ -211,7 +189,7 @@ export function usePostingConstructor() {
   }
 
   // ── Step 7: Submit supply ──
-  async function submitSupply() {
+  async function submitSupply(warehouseId) {
     loading.value = true
     error.value = null
     try {
@@ -222,7 +200,7 @@ export function usePostingConstructor() {
       const ts = selectedTimeslot.value
       const result = await invoke('create_supply_from_draft', {
         draftId: draftId.value,
-        warehouseId: selectedWarehouseId.value,
+        warehouseId: warehouseId,
         timeslotFrom: ts.from ?? ts.timeslot_from ?? '',
         timeslotTo: ts.to ?? ts.timeslot_to ?? '',
       })
@@ -257,11 +235,8 @@ export function usePostingConstructor() {
   // ── Reset ──
   function reset() {
     currentStep.value = INITIAL_STATE.currentStep
-    warehouses.value = INITIAL_STATE.warehouses
-    selectedWarehouseId.value = INITIAL_STATE.selectedWarehouseId
     clusters.value = INITIAL_STATE.clusters
     selectedClusterId.value = INITIAL_STATE.selectedClusterId
-    warehouseSearchQuery.value = INITIAL_STATE.warehouseSearchQuery
     clusterSearchQuery.value = INITIAL_STATE.clusterSearchQuery
     allProducts.value = INITIAL_STATE.allProducts
     productSearchQuery.value = INITIAL_STATE.productSearchQuery
@@ -282,15 +257,10 @@ export function usePostingConstructor() {
     currentStep,
     goToStep,
     // step 1
-    warehouses,
-    selectedWarehouseId,
-    loadWarehouses,
-    // step 2
     clusters,
     selectedClusterId,
     loadClusters,
     // search queries
-    warehouseSearchQuery,
     clusterSearchQuery,
     // step 3
     allProducts,

@@ -31,12 +31,8 @@ beforeEach(() => {
 const createMockComposable = (overrides = {}) => ({
   currentStep: ref(1),
   goToStep: vi.fn(),
-  warehouses: ref([]),
-  selectedWarehouseId: ref(null),
-  loadWarehouses: vi.fn(),
-  clusters: ref([]),
+  clusters: ref([{ cluster_id: 1, name: 'Cluster A', warehouses: [{ warehouse_id: 100, name: 'Warehouse 1' }] }]),
   selectedClusterId: ref(null),
-  warehouseSearchQuery: ref(''),
   clusterSearchQuery: ref(''),
   loadClusters: vi.fn(),
   allProducts: ref([]),
@@ -60,7 +56,7 @@ const createMockComposable = (overrides = {}) => ({
 })
 
 describe('PostingConstructor.vue', () => {
-  it('renders initial state with step indicator and warehouse loading', async () => {
+  it('renders initial state with step indicator and cluster loading', async () => {
     vi.mocked(useI18n).mockReturnValue({ t: (key) => key })
     const mock = createMockComposable({ loading: ref(true) })
     vi.mocked(usePostingConstructor).mockReturnValue(mock)
@@ -68,7 +64,6 @@ describe('PostingConstructor.vue', () => {
     const wrapper = mount(PostingConstructor)
     await nextTick()
 
-    expect(mock.loadWarehouses).toHaveBeenCalledTimes(1)
     expect(wrapper.find('.n-steps').attributes('data-current')).toBe('1')
     expect(wrapper.find('.n-spin').attributes('data-show')).toBe('true')
   })
@@ -93,9 +88,9 @@ describe('PostingConstructor.vue', () => {
 
   it('renders error alert with retry button', async () => {
     vi.mocked(useI18n).mockReturnValue({ t: (key) => key })
-    const loadWarehouses = vi.fn()
+    const loadClusters = vi.fn()
     vi.mocked(usePostingConstructor).mockReturnValue(
-      createMockComposable({ loading: ref(false), error: ref('Connection failed'), loadWarehouses })
+      createMockComposable({ loading: ref(false), error: ref('Connection failed'), clusters: ref([]), loadClusters: vi.fn().mockImplementation(loadClusters) })
     )
 
     const wrapper = mount(PostingConstructor)
@@ -107,14 +102,14 @@ describe('PostingConstructor.vue', () => {
     const retryBtn = wrapper.find('.n-button')
     expect(retryBtn.exists()).toBe(true)
     await retryBtn.trigger('click')
-    // called once on mount (onMounted) + once on retry click
-    expect(loadWarehouses).toHaveBeenCalledTimes(2)
+    // retry click
+    expect(loadClusters).toHaveBeenCalledTimes(2)
   })
 
-  it('shows empty message when no warehouses', async () => {
+  it('shows empty message when no cluster selected in step 2', async () => {
     vi.mocked(useI18n).mockReturnValue({ t: (key) => key })
     vi.mocked(usePostingConstructor).mockReturnValue(
-      createMockComposable({ loading: ref(false), error: ref(null), warehouses: ref([]) })
+      createMockComposable({ currentStep: ref(2), selectedClusterId: ref(null) })
     )
 
     const wrapper = mount(PostingConstructor)
@@ -128,7 +123,7 @@ describe('PostingConstructor.vue', () => {
     vi.mocked(useI18n).mockReturnValue({ t: (key) => key })
 
     const steps = [
-      { current: 2, check: 'postingConstructor.cluster' },
+      { current: 2, check: 'postingConstructor.selectWarehouse' },
       { current: 3, check: 'postingConstructor.noProducts' },
       { current: 4, check: 'postingConstructor.createDraft' },
       { current: 5, check: 'postingConstructor.loadTimeslots' },

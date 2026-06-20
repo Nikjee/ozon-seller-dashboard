@@ -10,9 +10,8 @@ import { usePostingConstructor } from '../composables/usePostingConstructor.js'
 const { t } = useI18n()
 const {
   currentStep, goToStep,
-  warehouses, selectedWarehouseId, loadWarehouses,
   clusters, selectedClusterId, loadClusters,
-  warehouseSearchQuery, clusterSearchQuery,
+  clusterSearchQuery,
   allProducts, productSearchQuery, products, productSearchResults,
   loadProducts, addProduct, removeProduct,
   draftId, submitDraft,
@@ -21,23 +20,36 @@ const {
   loading, error, reset
 } = usePostingConstructor()
 
-const timeslotDateRange = ref(null)
+// ── Step 2: Warehouse (local, derived from selected cluster) ──
+const selectedWarehouseId = ref(null)
+const warehouseSearchQuery = ref('')
+
+const clusterWarehouses = computed(() => {
+  if (!selectedClusterId.value) return []
+  const cluster = clusters.value.find(c => c.cluster_id === selectedClusterId.value)
+  return cluster?.warehouses ?? []
+})
+
+const filteredClusterWarehouses = computed(() => {
+  const q = warehouseSearchQuery.value.toLowerCase().trim()
+  const whs = clusterWarehouses.value
+  if (!q) return whs
+  return whs.filter(w => w.name && w.name.toLowerCase().includes(q))
+})
 
 const selectedWarehouseName = computed(() => {
-  const w = warehouses.value.find(w => w.warehouse_id === selectedWarehouseId.value)
+  if (!selectedWarehouseId.value) return ''
+  const w = clusterWarehouses.value.find(w => w.warehouse_id === selectedWarehouseId.value)
   return w ? (w.name || `ID: ${w.warehouse_id}`) : ''
 })
+
+// ── Other computed ──
+const timeslotDateRange = ref(null)
 
 const selectedClusterName = computed(() => {
   if (!selectedClusterId.value) return ''
   const c = clusters.value.find(c => c.cluster_id === selectedClusterId.value)
   return c ? (c.name || `ID: ${c.cluster_id}`) : ''
-})
-
-const filteredWarehouses = computed(() => {
-  const q = warehouseSearchQuery.value.toLowerCase().trim()
-  if (!q) return warehouses.value
-  return warehouses.value.filter(w => w.name && w.name.toLowerCase().includes(q))
 })
 
 const filteredClusters = computed(() => {
@@ -56,12 +68,15 @@ const availableProducts = computed(() => {
 })
 
 onMounted(() => {
-  loadWarehouses()
+  // Load clusters for step 1 on mount
+  if (!clusters.value.length) loadClusters()
 })
 
 watch(currentStep, (step) => {
-  if (step === 2 && !clusters.value.length) loadClusters()
+  if (step === 1 && !clusters.value.length) loadClusters()
   if (step === 3 && !allProducts.value.length) loadProducts()
+  // Reset warehouse selection when going back to step 1 (cluster changes)
+  if (step === 1) { selectedWarehouseId.value = null; warehouseSearchQuery.value = '' }
 })
 
 watch(draftId, (val) => {
@@ -75,6 +90,7 @@ watch(supplyResult, (val) => {
 function handleLoadTimeslots() {
   if (!timeslotDateRange.value || timeslotDateRange.value.length < 2) return
   loadTimeslots(
+    selectedWarehouseId.value,
     new Date(timeslotDateRange.value[0]).toISOString().split('T')[0],
     new Date(timeslotDateRange.value[1]).toISOString().split('T')[0]
   )
@@ -88,7 +104,7 @@ function formatTimeslot(ts) {
 
 function handleCreateAnother() {
   reset()
-  loadWarehouses()
+  loadClusters()
 }
 </script>
 
@@ -112,47 +128,8 @@ function handleCreateAnother() {
         <n-step :title="t('postingConstructor.step7')" />
       </n-steps>
 
-      <!-- Step 1: Warehouse Selection -->
+      <!-- Step 1: Cluster Selection -->
       <div v-if="currentStep === 1" class="step-content">
-        <h3>{{ t('postingConstructor.selectWarehouse') }}</h3>
-        <n-spin :show="loading">
-          <template v-if="error">
-            <n-alert type="error" closable>
-              <template #header>{{ t('postingConstructor.error') }}</template>
-              {{ error }}
-            </n-alert>
-            <n-button @click="loadWarehouses" style="margin-top: 12px;">
-              {{ t('postingConstructor.retry') }}
-            </n-button>
-          </template>
-          <template v-else-if="warehouses.length">
-            <div class="selection-container">
-              <n-input
-                v-model:value="warehouseSearchQuery"
-                :placeholder="t('postingConstructor.searchWarehouses')"
-                clearable
-                style="margin-bottom: 12px;"
-              />
-              <div class="selection-grid">
-                <div
-                  v-for="w in filteredWarehouses"
-                  :key="w.warehouse_id"
-                  class="selection-card"
-                  :class="{ 'selection-card--selected': selectedWarehouseId === w.warehouse_id }"
-                  @click="selectedWarehouseId = w.warehouse_id"
-                  :title="w.name"
-                >
-                  <div class="selection-card__title">{{ w.name }}</div>
-                </div>
-              </div>
-            </div>
-          </template>
-          <n-empty v-else :description="t('postingConstructor.noWarehouses')" />
-        </n-spin>
-      </div>
-
-      <!-- Step 2: Cluster Selection -->
-      <div v-if="currentStep === 2" class="step-content">
         <h3>{{ t('postingConstructor.cluster') }}</h3>
         <n-spin :show="loading">
           <template v-if="error">
@@ -188,6 +165,37 @@ function handleCreateAnother() {
           </template>
           <n-empty v-else :description="t('postingConstructor.noClusters')" />
         </n-spin>
+      </div>
+
+      <!-- Step 2: Warehouse Selection (from selected cluster) -->
+      <div v-if="currentStep === 2" class="step-content">
+        <h3>{{ t('postingConstructor.selectWarehouse') }}</h3>
+        <template v-if="!selectedClusterId">
+          <n-empty :description="t('postingConstructor.noWarehouses')" />
+        </template>
+        <template v-else-if="clusterWarehouses.length">
+          <div class="selection-container">
+            <n-input
+              v-model:value="warehouseSearchQuery"
+              :placeholder="t('postingConstructor.searchWarehouses')"
+              clearable
+              style="margin-bottom: 12px;"
+            />
+            <div class="selection-grid">
+              <div
+                v-for="w in filteredClusterWarehouses"
+                :key="w.warehouse_id"
+                class="selection-card"
+                :class="{ 'selection-card--selected': selectedWarehouseId === w.warehouse_id }"
+                @click="selectedWarehouseId = w.warehouse_id"
+                :title="w.name"
+              >
+                <div class="selection-card__title">{{ w.name }}</div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <n-empty v-else :description="t('postingConstructor.noWarehouses')" />
       </div>
 
       <!-- Step 3: Products -->
@@ -339,7 +347,7 @@ function handleCreateAnother() {
             </n-alert>
           </template>
           <template v-else>
-            <n-button type="primary" @click="submitSupply">
+            <n-button type="primary" @click="submitSupply(selectedWarehouseId)">
               {{ t('postingConstructor.createSupply') }}
             </n-button>
           </template>
@@ -369,8 +377,8 @@ function handleCreateAnother() {
         <n-button
           v-if="currentStep < 6"
           type="primary"
-          :disabled="(currentStep === 1 && !selectedWarehouseId) ||
-                     (currentStep === 2 && !selectedClusterId) ||
+          :disabled="(currentStep === 1 && !selectedClusterId) ||
+                     (currentStep === 2 && !selectedWarehouseId) ||
                      (currentStep === 3 && !products.length) ||
                      (currentStep === 4 && !draftId) ||
                      (currentStep === 5 && !selectedTimeslot)"
